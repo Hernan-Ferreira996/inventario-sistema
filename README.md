@@ -51,24 +51,43 @@ Credenciales por defecto: `admin@inventario.com` / `password`
 
 ## Módulos
 
-| Módulo | Estado |
-|---|---|
-| Empresas, Sucursales, Depósitos | ✅ Completo |
-| Grupos de Acceso + Permisos dinámicos | ✅ Completo |
-| Usuarios con asignación de grupos | ✅ Completo |
-| Presupuestos | ✅ Completo |
-| Pedidos de Venta | ✅ Completo |
-| Facturas (modo local + SIFEN ready) | ✅ Completo |
-| Notas de Crédito | ✅ Completo |
-| Notas de Remisión | ✅ Completo |
-| Pagos con conciliación automática | ✅ Completo |
-| Envíos / Despachos | ✅ Completo |
-| Proveedores | ✅ Completo |
-| Pedidos de Compra + Recepción | ✅ Completo |
-| Traslados de Stock | ✅ Completo |
-| Reportes (Excel + PDF) | ✅ Completo |
-| Auditoría de actividad | ✅ Completo |
-| Dashboard con KPIs y gráficos | ✅ Completo |
+### 🏢 Administración
+| Módulo | Descripción | Estado |
+|--------|-------------|--------|
+| Empresas | Multi-empresa con aislamiento total de datos | ✅ |
+| Sucursales y Depósitos | Jerarquía Empresa → Sucursal → Depósito | ✅ |
+| Usuarios | Creación y asignación de grupos de acceso | ✅ |
+| Grupos y Permisos | Matriz de permisos dinámica por módulo (estilo ScriptCase) | ✅ |
+| Auditoría | Registro de quién hizo qué y cuándo (Spatie Activity Log) | ✅ |
+
+### 🛒 Ciclo de Ventas
+| Módulo | Descripción | Estado |
+|--------|-------------|--------|
+| Presupuestos | Generación de presupuestos con conversión a pedido | ✅ |
+| Pedidos de Venta | Gestión de pedidos con control de stock | ✅ |
+| Facturas | Facturación modo local + SIFEN ready (formato KuDE) | ✅ |
+| Notas de Crédito | Devoluciones parciales, totales y anulaciones | ✅ |
+| Notas de Remisión | Despacho de mercadería con movimiento de stock | ✅ |
+| Pagos | Registro de pagos con conciliación automática | ✅ |
+| Envíos / Despachos | Seguimiento de entregas | ✅ |
+
+### 📦 Ciclo de Compras
+| Módulo | Descripción | Estado |
+|--------|-------------|--------|
+| Proveedores | Gestión de proveedores con historial de compras | ✅ |
+| Pedidos de Compra | Órdenes de compra con seguimiento | ✅ |
+| Recepción de Mercadería | Ingreso de stock con validación de cantidades | ✅ |
+
+### 📊 Inventario y Reportes
+| Módulo | Descripción | Estado |
+|--------|-------------|--------|
+| Productos | Catálogo con categorías, unidades e impuestos | ✅ |
+| Traslados de Stock | Movimientos entre depósitos con trazabilidad | ✅ |
+| Movimientos de Stock | Historial completo de entradas y salidas | ✅ |
+| Reportes de Ventas | Exportación a Excel y PDF | ✅ |
+| Reportes de Compras | Exportación a Excel y PDF | ✅ |
+| Reportes de Stock | Inventario valorizado exportable | ✅ |
+| Dashboard | KPIs, gráficos de ventas y alertas de stock bajo | ✅ |
 
 ## Arquitectura destacada
 
