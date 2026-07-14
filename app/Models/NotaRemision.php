@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\RestringidoPorSucursal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,7 @@ use Spatie\Activitylog\LogOptions;
 class NotaRemision extends Model
 {
     use PerteneceAEmpresa;
+    use RestringidoPorSucursal;
     use LogsActivity;
 
     protected $table = "notas_remision";
@@ -28,6 +30,13 @@ class NotaRemision extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName("notas_remision");
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $nota) {
+            MovimientoStock::revertir($nota, "Nota de Remisión {$nota->numero_completo} eliminada");
+        });
     }
 
     public function pedido(): BelongsTo { return $this->belongsTo(PedidoVenta::class, "pedido_id"); }

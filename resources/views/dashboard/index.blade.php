@@ -139,7 +139,7 @@
                             <td>{{ $pedido->cliente->nombre ?? '—' }}</td>
                             <td>{{ $pedido->fecha_pedido->format('d/m/Y') }}</td>
                             <td class="fw-semibold">{{ number_format($pedido->total, 2) }}</td>
-                            <td><span class="badge badge-estado-{{ $pedido->estado }}">{{ ucfirst($pedido->estado) }}</span></td>
+                            <td><x-badge-estado grupo="pedidos_venta.estado" :valor="$pedido->estado" /></td>
                         </tr>
                         @empty
                         <tr><td colspan="5" class="text-center text-muted py-4">Sin pedidos registrados</td></tr>

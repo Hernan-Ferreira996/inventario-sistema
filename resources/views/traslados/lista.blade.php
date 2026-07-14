@@ -4,7 +4,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Traslados entre Almacenes</h5>
     @can('productos.editar')
+    @if(!Auth::user()?->esSuperAdmin())
     <a href="{{ route('traslados.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Traslado</a>
+    @endif
     @endcan
 </div>
 <div class="card">
@@ -24,7 +26,7 @@
             @empty
             <tr><td colspan="6" class="text-center py-5 text-muted">
                 <i class="bi bi-arrow-left-right d-block mb-2" style="font-size:2rem"></i>
-                Sin traslados registrados. <a href="{{ route('traslados.create') }}">Crear el primero</a>
+                Sin traslados registrados. @if(!Auth::user()?->esSuperAdmin())<a href="{{ route('traslados.create') }}">Crear el primero</a>@endif
             </td></tr>
             @endforelse
             </tbody>

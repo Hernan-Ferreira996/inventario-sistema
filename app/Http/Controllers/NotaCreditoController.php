@@ -5,7 +5,9 @@ use App\Models\NotaCredito;
 use App\Models\Factura;
 use App\Models\MovimientoStock;
 use App\Models\Ubicacion;
+use App\Events\NotaCreditoEmitida;
 use App\Support\Configuracion;
+use App\Support\Numeracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +25,8 @@ class NotaCreditoController extends Controller
     {
         $factura = Factura::with(['pedido.cliente', 'pedido.detalles.producto'])->findOrFail($request->factura);
         $config = Configuracion::obtener();
-        $proximoNumero = $this->generarNumero();
-        $ubicaciones = Ubicacion::where('activo', true)->orderBy('nombre')->get();
+        $proximoNumero = Numeracion::previsualizar('notas_credito', $factura->sucursal_id);
+        $ubicaciones = Ubicacion::where('activo', true)->visiblesPara(Auth::user())->orderBy('nombre')->get();
 
         return view('notas-credito.crear', compact('factura', 'config', 'proximoNumero', 'ubicaciones'));
     }
@@ -35,7 +37,7 @@ class NotaCreditoController extends Controller
 
         $request->validate([
             'factura_id'          => 'required|exists:facturas,id',
-            'motivo'              => 'required|in:devolucion_total,devolucion_parcial,descuento,anulacion,otro',
+            'motivo'              => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('notas_credito.motivo')),
             'descripcion_motivo'  => 'nullable|string',
             'ubicacion_id'        => $restablecesStock ? 'required|exists:ubicaciones,id' : 'nullable|exists:ubicaciones,id',
             'productos'           => 'required|array|min:1',
@@ -43,6 +45,10 @@ class NotaCreditoController extends Controller
             'productos.*.cantidad'        => 'required|numeric|min:0.01',
             'productos.*.precio_unitario' => 'required|numeric|min:0',
         ]);
+
+        if ($restablecesStock) {
+            Ubicacion::verificarAcceso(Auth::user(), (int) $request->ubicacion_id);
+        }
 
         $factura = Factura::findOrFail($request->factura_id);
         $config = Configuracion::obtener();
@@ -53,7 +59,7 @@ class NotaCreditoController extends Controller
             $nota = NotaCredito::create([
                 'factura_id'         => $factura->id,
                 'usuario_id'         => Auth::id(),
-                'numero_documento'   => $this->generarNumero(),
+                'numero_documento'   => Numeracion::siguiente('notas_credito', $factura->sucursal_id),
                 'timbrado'           => $config['fact_timbrado'],
                 'establecimiento'    => $config['fact_establecimiento'],
                 'punto_expedicion'   => $config['fact_punto_expedicion'],
@@ -77,14 +83,16 @@ class NotaCreditoController extends Controller
                 // Devolución/anulación: la mercadería vuelve físicamente al almacén.
                 if ($restablecesStock) {
                     MovimientoStock::create([
-                        'producto_id'      => $p['producto_id'],
-                        'ubicacion_id'     => $request->ubicacion_id,
-                        'usuario_id'       => Auth::id(),
-                        'cantidad'         => abs($p['cantidad']),
-                        'tipo'             => 'entrada',
-                        'referencia'       => $nota->numero_completo,
-                        'notas'            => 'Devolución por Nota de Crédito',
-                        'fecha_movimiento' => now(),
+                        'producto_id'           => $p['producto_id'],
+                        'ubicacion_id'          => $request->ubicacion_id,
+                        'usuario_id'            => Auth::id(),
+                        'cantidad'              => abs($p['cantidad']),
+                        'tipo'                  => 'entrada',
+                        'referencia'            => $nota->numero_completo,
+                        'notas'                 => 'Devolución por Nota de Crédito',
+                        'fecha_movimiento'      => now(),
+                        'origen_documento_type' => $nota->getMorphClass(),
+                        'origen_documento_id'   => $nota->id,
                     ]);
                 }
             }
@@ -96,6 +104,8 @@ class NotaCreditoController extends Controller
 
             return $nota;
         });
+
+        event(new NotaCreditoEmitida($nota));
 
         return redirect()->route('notas-credito.show', $nota)
             ->with('success', 'Nota de crédito generada correctamente.');
@@ -123,11 +133,5 @@ class NotaCreditoController extends Controller
     {
         $notaCredito->delete();
         return redirect()->route('notas-credito.index')->with('success', 'Nota de crédito eliminada.');
-    }
-
-    private function generarNumero(): string
-    {
-        $ultimo = NotaCredito::max('id') ?? 0;
-        return str_pad($ultimo + 1, 7, '0', STR_PAD_LEFT);
     }
 }

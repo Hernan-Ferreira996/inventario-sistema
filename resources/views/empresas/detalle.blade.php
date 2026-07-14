@@ -41,6 +41,47 @@
 </div>
 <div class="col-md-8">
     <div class="card mb-3">
+        <div class="card-header fw-semibold"><i class="bi bi-box-seam me-2 text-primary"></i>Plan y Módulos Contratados</div>
+        <div class="card-body">
+        <form method="POST" action="{{ route('empresas.modulos', $empresa) }}">@csrf
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Plan</label>
+                    <select name="plan_id" class="form-select">
+                        <option value="">Sin plan (solo módulos núcleo)</option>
+                        @foreach($planes as $p)
+                        <option value="{{ $p->id }}" {{ $empresa->plan_id == $p->id ? 'selected' : '' }}>{{ $p->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Vencimiento de Licencia</label>
+                    <input type="date" name="fecha_vencimiento_licencia" class="form-control"
+                        value="{{ $empresa->fecha_vencimiento_licencia?->format('Y-m-d') }}">
+                    <small class="text-muted">Vacío = sin vencimiento</small>
+                </div>
+            </div>
+            <table class="table table-sm align-middle mb-3">
+                <thead><tr><th>Módulo</th><th class="text-center">Según Plan</th><th class="text-center">Forzar Activo</th><th class="text-center">Forzar Inactivo</th></tr></thead>
+                <tbody>
+                @foreach($modulos as $m)
+                @php $excepcion = $excepciones->get($m->id); $estado = $excepcion ? ($excepcion->habilitado ? 'activo' : 'inactivo') : 'plan'; @endphp
+                <tr>
+                    <td>{{ $m->nombre }} @if($m->nucleo)<span class="badge bg-secondary ms-1">Núcleo</span>@endif</td>
+                    <td class="text-center"><input type="radio" name="modulos[{{ $m->id }}]" value="plan" {{ $estado === 'plan' ? 'checked' : '' }} {{ $m->nucleo ? 'disabled' : '' }}></td>
+                    <td class="text-center"><input type="radio" name="modulos[{{ $m->id }}]" value="activo" {{ $estado === 'activo' ? 'checked' : '' }} {{ $m->nucleo ? 'disabled' : '' }}></td>
+                    <td class="text-center"><input type="radio" name="modulos[{{ $m->id }}]" value="inactivo" {{ $estado === 'inactivo' ? 'checked' : '' }} {{ $m->nucleo ? 'disabled' : '' }}></td>
+                </tr>
+                @endforeach
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Guardar Plan y Módulos</button>
+        </form>
+        </div>
+    </div>
+</div>
+<div class="col-md-8">
+    <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span class="fw-semibold"><i class="bi bi-building me-2 text-primary"></i>Sucursales y Depósitos</span>
             <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalSucursal">

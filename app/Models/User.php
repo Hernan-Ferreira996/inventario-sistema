@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -28,6 +29,26 @@ class User extends Authenticatable
     public function esSuperAdmin(): bool
     {
         return $this->empresa_id === null;
+    }
+
+    public function sucursales(): BelongsToMany
+    {
+        return $this->belongsToMany(Sucursal::class, 'usuario_sucursal');
+    }
+
+    public function tieneSucursalesRestringidas(): bool
+    {
+        return $this->sucursales()->exists();
+    }
+
+    public function ubicaciones(): BelongsToMany
+    {
+        return $this->belongsToMany(Ubicacion::class, 'usuario_ubicacion');
+    }
+
+    public function tieneUbicacionesRestringidas(): bool
+    {
+        return $this->ubicaciones()->exists();
     }
 
     /**

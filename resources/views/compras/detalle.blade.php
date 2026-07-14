@@ -11,7 +11,7 @@
             <div class="list-group-item"><small class="text-muted d-block">Fecha Pedido</small>{{ $pedidoCompra->fecha_pedido->format('d/m/Y') }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Fecha Esperada</small>{{ $pedidoCompra->fecha_esperada?->format('d/m/Y') ?? 'Sin fecha' }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Estado</small>
-                <span class="badge badge-estado-{{ $pedidoCompra->estado }}">{{ ucfirst($pedidoCompra->estado) }}</span>
+                <x-badge-estado grupo="pedidos_compra.estado" :valor="$pedidoCompra->estado" />
             </div>
             <div class="list-group-item"><small class="text-muted d-block">Total</small>
                 <strong class="fs-5">{{ number_format($pedidoCompra->total,2) }}</strong>

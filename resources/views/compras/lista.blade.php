@@ -3,7 +3,9 @@
 @section('contenido')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Pedidos de Compra</h5>
+    @if(!Auth::user()?->esSuperAdmin())
     <a href="{{ route('compras.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva Compra</a>
+    @endif
 </div>
 <div class="card mb-3"><div class="card-body py-2">
 <form method="GET" class="row g-2">
@@ -36,7 +38,7 @@
                 <td>{{ $p->fecha_pedido->format('d/m/Y') }}</td>
                 <td>{{ $p->fecha_esperada?->format('d/m/Y') ?? '—' }}</td>
                 <td class="text-end fw-semibold">{{ number_format($p->total,2) }}</td>
-                <td class="text-center"><span class="badge badge-estado-{{ $p->estado }}">{{ ucfirst($p->estado) }}</span></td>
+                <td class="text-center"><x-badge-estado grupo="pedidos_compra.estado" :valor="$p->estado" /></td>
                 <td><div class="d-flex gap-1">
                     <a href="{{ route('compras.show',$p) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
                     @if($p->estado === 'pendiente')
@@ -51,7 +53,7 @@
             @empty
             <tr><td colspan="7" class="text-center py-5 text-muted">
                 <i class="bi bi-bag-check d-block mb-2" style="font-size:2rem"></i>
-                Sin pedidos de compra. <a href="{{ route('compras.create') }}">Crear el primero</a>
+                Sin pedidos de compra. @if(!Auth::user()?->esSuperAdmin())<a href="{{ route('compras.create') }}">Crear el primero</a>@endif
             </td></tr>
             @endforelse
             </tbody>

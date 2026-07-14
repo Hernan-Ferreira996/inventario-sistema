@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use App\Models\Factura;
 use App\Models\PedidoVenta;
 use App\Models\Presupuesto;
+use App\Events\FacturaEmitida;
 use App\Support\Configuracion;
+use App\Support\Numeracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -68,7 +70,7 @@ class FacturaController extends Controller
         }
 
         $pedido = PedidoVenta::with(['cliente', 'detalles.producto'])->findOrFail($request->pedido);
-        $proximoNumero = $this->generarNumero();
+        $proximoNumero = Numeracion::previsualizar('facturas', $pedido->sucursal_id);
 
         return view('facturas.crear', compact('pedido', 'config', 'proximoNumero'));
     }
@@ -99,8 +101,9 @@ class FacturaController extends Controller
         $factura = DB::transaction(function () use ($request, $pedido, $config, $subtotal, $subtotalConDesc, $impuestoTotal, $descuentoGlobal, $montoDescuento) {
             $factura = Factura::create([
                 'pedido_id'         => $pedido->id,
-                'numero_factura'    => $this->generarNumero(),
+                'numero_factura'    => Numeracion::siguiente('facturas', $pedido->sucursal_id),
                 'fecha_factura'     => now()->toDateString(),
+                'fecha_vencimiento' => $request->condicion_venta === 'credito' ? now()->addDays(30)->toDateString() : null,
                 'timbrado'          => $config['fact_timbrado'],
                 'establecimiento'   => $config['fact_establecimiento'],
                 'punto_expedicion'  => $config['fact_punto_expedicion'],
@@ -122,6 +125,8 @@ class FacturaController extends Controller
 
             return $factura;
         });
+
+        event(new FacturaEmitida($factura));
 
         return redirect()->route('facturas.show', $factura)
             ->with('success', 'Factura generada correctamente.');
@@ -237,11 +242,5 @@ class FacturaController extends Controller
         $factura->delete();
 
         return redirect()->route('facturas.index')->with('success', 'Factura eliminada.');
-    }
-
-    private function generarNumero(): string
-    {
-        $ultimo = Factura::max('id') ?? 0;
-        return str_pad($ultimo + 1, 7, '0', STR_PAD_LEFT);
     }
 }

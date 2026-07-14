@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\RestringidoPorSucursal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,17 +12,19 @@ use Spatie\Activitylog\LogOptions;
 class Factura extends Model
 {
     use PerteneceAEmpresa;
+    use RestringidoPorSucursal;
     use LogsActivity;
 
     protected $table = "facturas";
     protected $fillable = [
-        "pedido_id", "numero_factura", "fecha_factura",
+        "pedido_id", "numero_factura", "fecha_factura", "fecha_vencimiento",
         "timbrado", "establecimiento", "punto_expedicion", "cdc", "modo",
         "tipo_documento_cliente", "numero_documento_cliente", "condicion_venta",
         "subtotal", "impuesto_total", "total", "monto_pagado", "descuento_global", "monto_descuento", "estado", "notas",
     ];
     protected $casts = [
         "fecha_factura" => "date",
+        "fecha_vencimiento" => "date",
         "subtotal" => "decimal:2", "impuesto_total" => "decimal:2",
         "total" => "decimal:2", "monto_pagado" => "decimal:2",
     ];
@@ -33,6 +36,16 @@ class Factura extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName("facturas");
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $factura) {
+            $asiento = AsientoContable::buscarPorOrigen($factura);
+            if ($asiento) {
+                AsientoContable::revertir($asiento, "Factura {$factura->numero_documento} eliminada");
+            }
+        });
     }
 
     public function pedido(): BelongsTo { return $this->belongsTo(PedidoVenta::class, "pedido_id"); }
@@ -47,5 +60,31 @@ class Factura extends Model
     public function getNumeroDocumentoAttribute(): string
     {
         return "{$this->establecimiento}-{$this->punto_expedicion}-{$this->numero_factura}";
+    }
+
+    public function estaVencida(): bool
+    {
+        return $this->fecha_vencimiento !== null
+            && $this->fecha_vencimiento->lt(now()->startOfDay())
+            && $this->saldo_pendiente > 0
+            && $this->estado !== "anulada";
+    }
+
+    public function diasVencida(): int
+    {
+        if (!$this->estaVencida()) {
+            return 0;
+        }
+
+        return (int) $this->fecha_vencimiento->diffInDays(now());
+    }
+
+    /**
+     * Facturas con saldo pendiente de cobro (no anuladas), para el módulo
+     * de cobranzas.
+     */
+    public function scopeConSaldoPendiente($query)
+    {
+        return $query->whereIn("estado", ["pendiente", "parcial"]);
     }
 }

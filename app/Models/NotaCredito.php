@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\RestringidoPorSucursal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,7 @@ use Spatie\Activitylog\LogOptions;
 class NotaCredito extends Model
 {
     use PerteneceAEmpresa;
+    use RestringidoPorSucursal;
     use LogsActivity;
 
     protected $table = "notas_credito";
@@ -32,6 +34,18 @@ class NotaCredito extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName("notas_credito");
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $nota) {
+            MovimientoStock::revertir($nota, "Nota de Crédito {$nota->numero_completo} eliminada");
+
+            $asiento = AsientoContable::buscarPorOrigen($nota);
+            if ($asiento) {
+                AsientoContable::revertir($asiento, "Nota de Crédito {$nota->numero_completo} eliminada");
+            }
+        });
     }
 
     public function factura(): BelongsTo { return $this->belongsTo(Factura::class); }

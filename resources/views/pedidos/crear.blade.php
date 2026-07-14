@@ -63,11 +63,12 @@
                         <select name="productos[0][producto_id]" class="form-select select-producto" required>
                             <option value="">-- Seleccionar producto --</option>
                             @foreach($productos as $p)
-                            <option value="{{ $p->id }}" data-precio="{{ $p->precio_venta_minorista }}">{{ $p->codigo }} — {{ $p->nombre }}</option>
+                            <option value="{{ $p->id }}" data-precio="{{ $p->precio_venta_minorista }}" data-disponible="{{ $p->stock_disponible }}">{{ $p->codigo }} — {{ $p->nombre }}</option>
                             @endforeach
                         </select>
+                        <small class="text-muted disponible-info"></small>
                     </div>
-                    <div class="col-md-2"><input type="number" name="productos[0][cantidad]" class="form-control" placeholder="Cantidad" step="0.01" min="0.01" value="1" required></div>
+                    <div class="col-md-2"><input type="number" name="productos[0][cantidad]" class="form-control cantidad-input" placeholder="Cantidad" step="0.01" min="0.01" value="1" required></div>
                     <div class="col-md-2"><div class="input-group"><span class="input-group-text">$</span><input type="number" name="productos[0][precio_unitario]" class="form-control precio-input" placeholder="Precio" step="0.01" min="0" value="0" required></div></div>
                     <div class="col-md-2"><div class="input-group"><input type="number" name="productos[0][descuento]" class="form-control" placeholder="Desc%" step="0.01" min="0" max="100" value="0"><span class="input-group-text">%</span></div></div>
                     <div class="col-md-1 text-end"><button type="button" class="btn btn-outline-danger btn-sm btn-quitar" onclick="quitarLinea(this)"><i class="bi bi-x"></i></button></div>
@@ -98,9 +99,11 @@ function agregarLinea() {
     nueva.querySelectorAll('input').forEach(i => { if(i.name.includes('cantidad')) i.value = 1; else i.value = 0; });
     nueva.querySelectorAll('select').forEach(s => { s.name = s.name.replace(/\[\d+\]/, `[${idx}]`); s.value = ''; });
     nueva.querySelectorAll('input').forEach(i => { i.name = i.name.replace(/\[\d+\]/, `[${idx}]`); });
+    nueva.querySelector('.disponible-info').textContent = '';
     idx++;
     cont.appendChild(nueva);
     nueva.querySelector('.select-producto').addEventListener('change', autocompletarPrecio);
+    nueva.querySelector('.cantidad-input').addEventListener('input', verificarDisponible);
 }
 
 function quitarLinea(btn) {
@@ -113,9 +116,34 @@ function autocompletarPrecio(e) {
     const opt = sel.options[sel.selectedIndex];
     const precio = opt.getAttribute('data-precio') || 0;
     sel.closest('.linea-item').querySelector('.precio-input').value = precio;
+    verificarDisponible(e);
+}
+
+function verificarDisponible(e) {
+    const linea = e.target.closest('.linea-item');
+    const sel = linea.querySelector('.select-producto');
+    const opt = sel.options[sel.selectedIndex];
+    const info = linea.querySelector('.disponible-info');
+    const cantidadInput = linea.querySelector('.cantidad-input');
+
+    if (!opt || !opt.value) { info.textContent = ''; return; }
+
+    const disponible = parseFloat(opt.getAttribute('data-disponible') || 0);
+    const cantidad = parseFloat(cantidadInput.value || 0);
+
+    if (cantidad > disponible) {
+        info.textContent = `⚠ Disponible: ${disponible} (ya hay ${cantidad - disponible} comprometido con este pedido)`;
+        info.classList.add('text-danger');
+        info.classList.remove('text-muted');
+    } else {
+        info.textContent = `Disponible: ${disponible}`;
+        info.classList.add('text-muted');
+        info.classList.remove('text-danger');
+    }
 }
 
 document.querySelectorAll('.select-producto').forEach(s => s.addEventListener('change', autocompletarPrecio));
+document.querySelectorAll('.cantidad-input').forEach(i => i.addEventListener('input', verificarDisponible));
 </script>
 @endpush
 @endsection

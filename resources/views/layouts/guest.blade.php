@@ -11,13 +11,10 @@
 body { margin:0; background:#f1f5f9; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Segoe UI',sans-serif; }
 .auth-wrapper { display:flex; width:100%; max-width:960px; min-height:560px; border-radius:20px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.15); }
 .auth-brand { width:42%; background:linear-gradient(160deg,#1e293b 60%,#334155); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 2.5rem; }
-.auth-brand .logo-icon { width:72px; height:72px; background:rgba(255,255,255,.1); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:2rem; margin-bottom:1.5rem; }
+.auth-brand .logo-icon { width:72px; height:72px; background:linear-gradient(135deg,#3b82f6,#1d4ed8); border-radius:18px; display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem; box-shadow:0 8px 20px rgba(59,130,246,.35); }
+.auth-brand .logo-icon span { font-size:1.6rem; font-weight:800; letter-spacing:-.03em; color:#fff; }
 .auth-brand h1 { font-size:1.6rem; font-weight:700; margin-bottom:.4rem; }
 .auth-brand p { color:#94a3b8; font-size:.9rem; text-align:center; line-height:1.5; }
-.auth-brand .features { margin-top:2rem; width:100%; }
-.auth-brand .feature { display:flex; align-items:center; gap:.75rem; padding:.5rem 0; color:#cbd5e1; font-size:.85rem; border-bottom:1px solid rgba(255,255,255,.07); }
-.auth-brand .feature:last-child { border:none; }
-.auth-brand .feature i { color:#60a5fa; font-size:1rem; flex-shrink:0; }
 .auth-form { flex:1; background:#fff; display:flex; flex-direction:column; justify-content:center; padding:3rem 3.5rem; }
 .auth-form h2 { font-size:1.5rem; font-weight:700; color:#1e293b; margin-bottom:.3rem; }
 .auth-form .subtitle { color:#64748b; font-size:.9rem; margin-bottom:2rem; }
@@ -36,17 +33,10 @@ body { margin:0; background:#f1f5f9; min-height:100vh; display:flex; align-items
 <body>
 <div class="auth-wrapper">
     <div class="auth-brand">
-        <div class="logo-icon"><i class="bi bi-boxes"></i></div>
+        <div class="logo-icon"><span>IP</span></div>
         <h1>Inventario Pro</h1>
         <span class="brand-badge"><i class="bi bi-geo-alt me-1"></i>Paraguay</span>
-        <p>Sistema completo de inventario, ventas y facturación electrónica</p>
-        <div class="features">
-            <div class="feature"><i class="bi bi-receipt-cutoff"></i>Facturación electrónica SIFEN</div>
-            <div class="feature"><i class="bi bi-building"></i>Multi-empresa y sucursales</div>
-            <div class="feature"><i class="bi bi-shield-check"></i>Control de acceso por roles</div>
-            <div class="feature"><i class="bi bi-graph-up-arrow"></i>Reportes y estadísticas</div>
-            <div class="feature"><i class="bi bi-stack"></i>Control de stock en tiempo real</div>
-        </div>
+        <p>El sistema de gestión modular para tu empresa: activá solo los módulos que necesitás y sumá más a medida que creces.</p>
     </div>
     <div class="auth-form">
         {{ $slot }}

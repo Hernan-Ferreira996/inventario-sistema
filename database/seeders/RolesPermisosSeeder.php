@@ -15,7 +15,7 @@ class RolesPermisosSeeder extends Seeder
         $modulos = [
             'productos', 'categorias', 'clientes', 'proveedores',
             'pedidos', 'compras', 'facturas', 'pagos', 'envios',
-            'reportes', 'usuarios', 'configuracion',
+            'reportes', 'usuarios', 'configuracion', 'contabilidad',
         ];
         $acciones = ['ver', 'crear', 'editar', 'eliminar'];
 
@@ -68,6 +68,7 @@ class RolesPermisosSeeder extends Seeder
             'pagos.ver', 'pagos.crear', 'pagos.editar',
             'reportes.ver', 'reportes.compras', 'reportes.exportar',
             'configuracion.ver',
+            'contabilidad.ver', 'contabilidad.crear', 'contabilidad.editar',
         ]);
 
         // Asignar rol admin al usuario admin existente

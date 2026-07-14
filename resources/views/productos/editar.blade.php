@@ -5,7 +5,7 @@
 <div class="card"><div class="card-header fw-semibold">Editar: {{ $producto->nombre }}</div><div class="card-body">
 <form method="POST" action="{{ route('productos.update',$producto) }}" enctype="multipart/form-data">@csrf @method('PATCH')
 <div class="row g-3">
-<div class="col-md-4"><label class="form-label fw-semibold">Codigo</label><input type="text" class="form-control bg-light" value="{{ $producto->codigo }}" readonly></div>
+<div class="col-md-4"><label class="form-label fw-semibold">Codigo</label><input type="text" name="codigo" class="form-control bg-light" value="{{ $producto->codigo }}" readonly></div>
 <div class="col-md-8"><label class="form-label fw-semibold">Nombre *</label><input type="text" name="nombre" class="form-control" value="{{ old('nombre',$producto->nombre) }}" required></div>
 <div class="col-12"><label class="form-label fw-semibold">Descripcion</label><textarea name="descripcion" class="form-control" rows="2">{{ old('descripcion',$producto->descripcion) }}</textarea></div>
 <div class="col-md-4"><label class="form-label fw-semibold">Categoria</label>
@@ -17,6 +17,7 @@
 <div class="col-md-4"><label class="form-label fw-semibold">Precio Compra</label><div class="input-group"><span class="input-group-text">$</span><input type="number" name="precio_compra" class="form-control" step="0.01" value="{{ $producto->precio_compra }}" required></div></div>
 <div class="col-md-4"><label class="form-label fw-semibold">Precio Minorista</label><div class="input-group"><span class="input-group-text">$</span><input type="number" name="precio_venta_minorista" class="form-control" step="0.01" value="{{ $producto->precio_venta_minorista }}" required></div></div>
 <div class="col-md-4"><label class="form-label fw-semibold">Precio Mayorista</label><div class="input-group"><span class="input-group-text">$</span><input type="number" name="precio_venta_mayorista" class="form-control" step="0.01" value="{{ $producto->precio_venta_mayorista }}" required></div></div>
+<div class="col-md-4"><label class="form-label fw-semibold">Stock mínimo</label><input type="number" name="stock_minimo" class="form-control" step="0.01" min="0" value="{{ old('stock_minimo',$producto->stock_minimo) }}" placeholder="Usar valor por defecto de la empresa"><small class="text-muted">Vacío = usa el mínimo general configurado en la empresa</small></div>
 <div class="col-md-6"><label class="form-label fw-semibold">Nueva Imagen</label><input type="file" name="imagen" class="form-control" accept="image/*">@if($producto->imagen)<small class="text-muted">Imagen actual: {{ basename($producto->imagen) }}</small>@endif</div>
 <div class="col-md-6 d-flex align-items-end"><div class="form-check mb-1"><input type="checkbox" name="activo" value="1" class="form-check-input" {{ $producto->activo ? 'checked' : '' }}><label class="form-check-label">Producto activo</label></div></div>
 </div>

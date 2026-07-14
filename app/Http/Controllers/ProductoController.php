@@ -7,7 +7,9 @@ use App\Models\Categoria;
 use App\Models\Unidad;
 use App\Models\Impuesto;
 use App\Models\Ubicacion;
+use App\Models\MovimientoStock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -30,8 +32,7 @@ class ProductoController extends Controller
             $query->where('categoria_id', $request->categoria_id);
         }
         if ($request->filled('stock_bajo')) {
-            $minimo = (int) (\App\Support\Configuracion::obtener()['sistema_stock_minimo'] ?? 5);
-            $query->having('movimientos_sum_cantidad', '<=', $minimo);
+            $query->stockBajo();
         }
 
         $productos = $query->orderBy('nombre')->paginate(25)->withQueryString();
@@ -40,10 +41,12 @@ class ProductoController extends Controller
 
         $totales = [
             'cantidad_productos' => Producto::activos()->count(),
-            'stock_total'        => Producto::activos()->withSum('movimientos', 'cantidad')->get()->sum('movimientos_sum_cantidad'),
+            'stock_total'        => (float) MovimientoStock::whereIn('producto_id', Producto::activos()->select('id'))->sum('cantidad'),
         ];
 
-        return view('productos.lista', compact('productos', 'totales', 'categorias'));
+        $stockMinimoDefault = (float) (\App\Support\Configuracion::obtener()['sistema_stock_minimo'] ?? 5);
+
+        return view('productos.lista', compact('productos', 'totales', 'categorias', 'stockMinimoDefault'));
     }
 
     public function create()
@@ -51,7 +54,7 @@ class ProductoController extends Controller
         $categorias = Categoria::where('activo', true)->orderBy('nombre')->get();
         $unidades   = Unidad::orderBy('nombre')->get();
         $impuestos  = Impuesto::orderBy('nombre')->get();
-        $ubicaciones = Ubicacion::where('activo', true)->orderBy('nombre')->get();
+        $ubicaciones = Ubicacion::where('activo', true)->visiblesPara(auth()->user())->orderBy('nombre')->get();
 
         return view('productos.crear', compact('categorias', 'unidades', 'impuestos', 'ubicaciones'));
     }
@@ -68,6 +71,7 @@ class ProductoController extends Controller
             'precio_compra'            => 'required|numeric|min:0',
             'precio_venta_minorista'   => 'required|numeric|min:0',
             'precio_venta_mayorista'   => 'required|numeric|min:0',
+            'stock_minimo'             => 'nullable|numeric|min:0',
             'imagen'                   => 'nullable|image|max:2048',
         ]);
 
@@ -91,7 +95,15 @@ class ProductoController extends Controller
             ->with('ubicacion')
             ->selectRaw('ubicacion_id, SUM(cantidad) as total')
             ->groupBy('ubicacion_id')
-            ->get();
+            ->get()
+            ->map(function ($fila) use ($producto) {
+                $comprometido = $producto->stockComprometido($fila->ubicacion_id);
+                $fila->comprometido = $comprometido;
+                $fila->disponible = $fila->total - $comprometido;
+                return $fila;
+            });
+
+        $stockComprometidoTotal = $producto->stockComprometido();
 
         $historialMovimientos = $producto->movimientos()
             ->with(['ubicacion', 'usuario'])
@@ -99,7 +111,9 @@ class ProductoController extends Controller
             ->take(20)
             ->get();
 
-        return view('productos.detalle', compact('producto', 'stockPorUbicacion', 'historialMovimientos'));
+        $ubicaciones = Ubicacion::where('activo', true)->visiblesPara(auth()->user())->orderBy('nombre')->get();
+
+        return view('productos.detalle', compact('producto', 'stockPorUbicacion', 'historialMovimientos', 'stockComprometidoTotal', 'ubicaciones'));
     }
 
     public function edit(Producto $producto)
@@ -123,6 +137,7 @@ class ProductoController extends Controller
             'precio_compra'          => 'required|numeric|min:0',
             'precio_venta_minorista' => 'required|numeric|min:0',
             'precio_venta_mayorista' => 'required|numeric|min:0',
+            'stock_minimo'           => 'nullable|numeric|min:0',
             'imagen'                 => 'nullable|image|max:2048',
             'activo'                 => 'boolean',
         ]);
@@ -158,26 +173,40 @@ class ProductoController extends Controller
             'notas'        => 'nullable|string',
         ]);
 
+        Ubicacion::verificarAcceso(auth()->user(), (int) $request->ubicacion_id);
+
         $cantidad = $request->tipo === 'salida'
             ? -abs($request->cantidad)
             : abs($request->cantidad);
 
-        if ($request->tipo === 'salida') {
-            $stockActual = $producto->stockEnUbicacion($request->ubicacion_id);
-            if ($stockActual < abs($request->cantidad)) {
-                return back()->with('error', "Stock insuficiente. Disponible: $stockActual");
-            }
-        }
+        try {
+            DB::transaction(function () use ($request, $producto, $cantidad) {
+                // Bloquea la fila del producto para serializar ajustes concurrentes
+                // sobre el mismo producto y evitar que dos salidas simultáneas dejen
+                // el stock en negativo (el stock es derivado, no hay fila de "saldo"
+                // propia que bloquear).
+                $productoBloqueado = Producto::whereKey($producto->id)->lockForUpdate()->firstOrFail();
 
-        $producto->movimientos()->create([
-            'ubicacion_id'     => $request->ubicacion_id,
-            'usuario_id'       => auth()->id(),
-            'cantidad'         => $cantidad,
-            'tipo'             => $request->tipo,
-            'referencia'       => $request->referencia,
-            'notas'            => $request->notas,
-            'fecha_movimiento' => now(),
-        ]);
+                if ($request->tipo === 'salida') {
+                    $stockActual = $productoBloqueado->stockEnUbicacion($request->ubicacion_id);
+                    if ($stockActual < abs($request->cantidad)) {
+                        throw new \RuntimeException("Stock insuficiente. Disponible: $stockActual");
+                    }
+                }
+
+                $productoBloqueado->movimientos()->create([
+                    'ubicacion_id'     => $request->ubicacion_id,
+                    'usuario_id'       => auth()->id(),
+                    'cantidad'         => $cantidad,
+                    'tipo'             => $request->tipo,
+                    'referencia'       => $request->referencia,
+                    'notas'            => $request->notas,
+                    'fecha_movimiento' => now(),
+                ]);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('exito', 'Stock actualizado exitosamente.');
     }

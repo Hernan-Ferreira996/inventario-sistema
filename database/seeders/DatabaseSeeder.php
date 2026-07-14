@@ -25,6 +25,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(RolesPermisosSeeder::class);
+        $this->call(ModulosPlanesSeeder::class);
+        $this->call(CatalogoValoresSeeder::class);
+        $this->call(SecuenciasDocumentoSeeder::class);
+        $this->call(PlanDeCuentasSeeder::class);
 
         $demo = [
             ['email' => 'vendedor@inventario.com',  'name' => 'Carla Vendedora', 'rol' => 'vendedor'],

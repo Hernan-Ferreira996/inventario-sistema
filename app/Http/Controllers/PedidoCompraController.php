@@ -6,6 +6,8 @@ use App\Models\MovimientoStock;
 use App\Models\Proveedor;
 use App\Models\Producto;
 use App\Models\Ubicacion;
+use App\Events\CompraRecibida;
+use App\Support\Numeracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,8 +37,8 @@ class PedidoCompraController extends Controller
     {
         $proveedores   = Proveedor::where("activo", true)->orderBy("nombre")->get();
         $productos     = Producto::where("activo", true)->orderBy("nombre")->get();
-        $ubicaciones   = Ubicacion::where("activo", true)->orderBy("nombre")->get();
-        $proximoNumero = $this->generarNumero();
+        $ubicaciones   = Ubicacion::where("activo", true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
+        $proximoNumero = Numeracion::previsualizar('pedidos_compra', null, 'PC-');
         return view("compras.crear", compact("proveedores","productos","ubicaciones","proximoNumero"));
     }
 
@@ -60,7 +62,7 @@ class PedidoCompraController extends Controller
                 "proveedor_id"      => $request->proveedor_id,
                 "usuario_id"        => Auth::id(),
                 "ubicacion_id"      => $request->ubicacion_id ?: null,
-                "numero_referencia" => $this->generarNumero(),
+                "numero_referencia" => Numeracion::siguiente('pedidos_compra', null, 'PC-'),
                 "comentarios"       => $request->comentarios,
                 "fecha_pedido"      => $request->fecha_pedido,
                 "fecha_esperada"    => $request->fecha_esperada ?: null,
@@ -84,7 +86,7 @@ class PedidoCompraController extends Controller
     public function show(PedidoCompra $pedidoCompra)
     {
         $pedidoCompra->load(["proveedor","usuario","ubicacion","detalles.producto","recepciones.detalles.producto"]);
-        $ubicaciones = Ubicacion::where("activo", true)->orderBy("nombre")->get();
+        $ubicaciones = Ubicacion::where("activo", true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
         return view("compras.detalle", compact("pedidoCompra","ubicaciones"));
     }
 
@@ -94,7 +96,7 @@ class PedidoCompraController extends Controller
             return redirect()->route("compras.show",$pedidoCompra)->with("error","No se puede editar un pedido completado.");
         }
         $proveedores = Proveedor::where("activo",true)->orderBy("nombre")->get();
-        $ubicaciones = Ubicacion::where("activo",true)->orderBy("nombre")->get();
+        $ubicaciones = Ubicacion::where("activo",true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
         $pedidoCompra->load("detalles.producto");
         return view("compras.editar", compact("pedidoCompra","proveedores","ubicaciones"));
     }
@@ -104,7 +106,7 @@ class PedidoCompraController extends Controller
         $request->validate([
             "proveedor_id" => "required|exists:proveedores,id",
             "fecha_pedido" => "required|date",
-            "estado"       => "required|in:pendiente,parcial,completado,cancelado",
+            "estado"       => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.estado')),
         ]);
         $pedidoCompra->update([
             "proveedor_id"   => $request->proveedor_id,
@@ -135,7 +137,9 @@ class PedidoCompraController extends Controller
             "items.*.cantidad"   => "required|numeric|min:0.01",
         ]);
 
-        DB::transaction(function () use ($request, $pedidoCompra) {
+        Ubicacion::verificarAcceso(Auth::user(), (int) $request->ubicacion_id);
+
+        $recepcion = DB::transaction(function () use ($request, $pedidoCompra) {
             $recepcion = $pedidoCompra->recepciones()->create([
                 "usuario_id"        => Auth::id(),
                 "fecha_recepcion"   => now()->toDateString(),
@@ -171,14 +175,13 @@ class PedidoCompraController extends Controller
             $completo = $pedidoCompra->detalles->every(fn($d) => $d->cantidad_recibida >= $d->cantidad);
             $parcial  = $pedidoCompra->detalles->some(fn($d) => $d->cantidad_recibida > 0);
             $pedidoCompra->update(["estado" => $completo ? "completado" : ($parcial ? "parcial" : "pendiente")]);
+
+            return $recepcion;
         });
+
+        event(new CompraRecibida($recepcion));
 
         return redirect()->route("compras.show",$pedidoCompra)->with("success","Stock recibido y registrado.");
     }
 
-    private function generarNumero(): string
-    {
-        $ultimo = PedidoCompra::max("id") ?? 0;
-        return "PC-" . str_pad($ultimo + 1, 6, "0", STR_PAD_LEFT);
-    }
 }

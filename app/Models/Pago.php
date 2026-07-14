@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\RestringidoPorSucursal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -10,6 +11,7 @@ use Spatie\Activitylog\LogOptions;
 class Pago extends Model
 {
     use PerteneceAEmpresa;
+    use RestringidoPorSucursal;
     use LogsActivity;
 
     protected $table = "pagos";
@@ -23,6 +25,24 @@ class Pago extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName("pagos");
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $model) {
+            if (empty($model->sucursal_id)) {
+                $model->sucursal_id = $model->factura_id
+                    ? Factura::find($model->factura_id)?->sucursal_id
+                    : PedidoVenta::find($model->pedido_id)?->sucursal_id;
+            }
+        });
+
+        static::deleting(function (self $pago) {
+            $asiento = AsientoContable::buscarPorOrigen($pago);
+            if ($asiento) {
+                AsientoContable::revertir($asiento, "Pago #{$pago->id} eliminado");
+            }
+        });
     }
 
     public function pedido(): BelongsTo { return $this->belongsTo(PedidoVenta::class, "pedido_id"); }

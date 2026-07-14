@@ -19,7 +19,7 @@ class TrasladoController extends Controller
 
     public function create()
     {
-        $ubicaciones = Ubicacion::where("activo", true)->orderBy("nombre")->get();
+        $ubicaciones = Ubicacion::where("activo", true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
         $productos = Producto::activos()->orderBy("nombre")->get();
         return view("traslados.crear", compact("ubicaciones", "productos"));
     }
@@ -36,6 +36,8 @@ class TrasladoController extends Controller
             "productos.*.producto_id" => "required|exists:productos,id",
             "productos.*.cantidad"    => "required|numeric|min:0.01",
         ]);
+
+        Ubicacion::verificarAcceso(Auth::user(), (int) $request->ubicacion_origen_id);
 
         // Verificar stock disponible en origen para cada producto antes de trasladar
         foreach ($request->productos as $p) {

@@ -3,6 +3,11 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\TieneCamposPersonalizados;
+use App\Traits\TieneContactos;
+use App\Traits\TieneDocumentosAdjuntos;
+use App\Traits\TieneEtiquetas;
+use App\Traits\TieneInteracciones;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +18,17 @@ use Spatie\Activitylog\LogOptions;
 class Proveedor extends Model
 {
     use PerteneceAEmpresa;
+    use TieneCamposPersonalizados;
+    use TieneContactos;
+    use TieneInteracciones;
+    use TieneEtiquetas;
+    use TieneDocumentosAdjuntos;
     use SoftDeletes, LogsActivity;
+
+    public static function entidadCamposPersonalizados(): string
+    {
+        return 'proveedor';
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

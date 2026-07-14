@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\RestringidoPorSucursal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,13 +12,14 @@ use Spatie\Activitylog\LogOptions;
 class Presupuesto extends Model
 {
     use PerteneceAEmpresa;
+    use RestringidoPorSucursal;
     use LogsActivity;
 
     protected $table = "presupuestos";
     protected $fillable = [
         "cliente_id", "usuario_id", "pedido_id", "numero_documento",
         "fecha_emision", "fecha_validez", "comentarios",
-        "subtotal", "impuesto_total", "total", "descuento_global", "monto_descuento", "estado",
+        "subtotal", "impuesto_total", "total", "descuento_global", "monto_descuento", "estado", "etapa",
     ];
     protected $casts = [
         "fecha_emision" => "date", "fecha_validez" => "date",

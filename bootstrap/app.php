@@ -14,8 +14,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'       => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'modulo'     => \App\Http\Middleware\VerificarModulo::class,
+            'licencia'   => \App\Http\Middleware\VerificarLicenciaVigente::class,
+            'no-superadmin' => \App\Http\Middleware\DenegarSuperAdminOperativo::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // El mensaje por defecto de Spatie ("User does not have the right
+        // permissions") no le dice al usuario qué hacer. Se reemplaza por un
+        // mensaje accionable, igual para cualquier permiso que falte.
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+            return response()->view('errors.403-permiso', [], 403);
+        });
     })->create();

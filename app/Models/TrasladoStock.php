@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\RestringidoPorSucursal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,7 @@ use Spatie\Activitylog\LogOptions;
 class TrasladoStock extends Model
 {
     use PerteneceAEmpresa;
+    use RestringidoPorSucursal;
     use LogsActivity;
 
     protected $table = "traslados_stock";
@@ -24,6 +26,15 @@ class TrasladoStock extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName("traslados");
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $model) {
+            if (empty($model->sucursal_id) && $model->ubicacion_origen_id) {
+                $model->sucursal_id = Ubicacion::find($model->ubicacion_origen_id)?->sucursal_id;
+            }
+        });
     }
 
     public function usuario(): BelongsTo { return $this->belongsTo(User::class); }

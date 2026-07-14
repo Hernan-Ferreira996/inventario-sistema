@@ -2,6 +2,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
+use App\Models\EmpresaModulo;
+use App\Models\Modulo;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 
 class EmpresaController extends Controller
@@ -49,9 +52,40 @@ class EmpresaController extends Controller
 
     public function show(Empresa $empresa)
     {
-        $empresa->load("sucursales.depositos");
+        $empresa->load("sucursales.depositos", "plan");
         $usuarios = \App\Models\User::where("empresa_id", $empresa->id)->get();
-        return view("empresas.detalle", compact("empresa", "usuarios"));
+        $planes = Plan::where("activo", true)->orderBy("orden")->get();
+        $modulos = Modulo::where("activo", true)->orderBy("orden")->get();
+        $excepciones = $empresa->empresaModulos()->get()->keyBy("modulo_id");
+        return view("empresas.detalle", compact("empresa", "usuarios", "planes", "modulos", "excepciones"));
+    }
+
+    public function updateModulos(Request $request, Empresa $empresa)
+    {
+        $request->validate([
+            "plan_id" => "nullable|exists:planes,id",
+            "fecha_vencimiento_licencia" => "nullable|date",
+            "modulos" => "nullable|array",
+            "modulos.*" => "in:plan,activo,inactivo",
+        ]);
+
+        $empresa->update([
+            "plan_id" => $request->plan_id,
+            "fecha_vencimiento_licencia" => $request->fecha_vencimiento_licencia,
+        ]);
+
+        foreach ($request->input("modulos", []) as $moduloId => $estado) {
+            if ($estado === "plan") {
+                EmpresaModulo::where("empresa_id", $empresa->id)->where("modulo_id", $moduloId)->delete();
+                continue;
+            }
+            EmpresaModulo::updateOrCreate(
+                ["empresa_id" => $empresa->id, "modulo_id" => $moduloId],
+                ["habilitado" => $estado === "activo"]
+            );
+        }
+
+        return redirect()->route("empresas.show", $empresa)->with("success", "Plan y módulos actualizados.");
     }
 
     public function edit(Empresa $empresa)

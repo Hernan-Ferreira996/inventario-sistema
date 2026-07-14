@@ -14,7 +14,7 @@ Route::get('/', fn() => redirect()->route('dashboard'));
 require __DIR__.'/auth.php';
 
 // Rutas protegidas
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
 
     // Panel principal (todos los roles autenticados)
     Route::get('/panel', [DashboardController::class, 'index'])->name('dashboard');
@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/perfil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // ===== INVENTARIO =====
+    Route::middleware('modulo:inventario')->group(function () {
     Route::resource('productos', ProductoController::class)
         ->middlewareFor(['index', 'show'], 'permission:productos.ver')
         ->middlewareFor(['create', 'store'], 'permission:productos.crear')
@@ -49,11 +50,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('ubicaciones', \App\Http\Controllers\UbicacionController::class)
         ->parameters(['ubicaciones' => 'ubicacion'])
         ->middleware('permission:configuracion.editar');
+    });
 
     // ===== VENTAS =====
+    Route::middleware('modulo:ventas')->group(function () {
     Route::resource('pedidos', PedidoVentaController::class)
         ->middlewareFor(['index', 'show'], 'permission:pedidos.ver')
-        ->middlewareFor(['create', 'store'], 'permission:pedidos.crear')
+        ->middlewareFor(['create', 'store'], ['permission:pedidos.crear', 'no-superadmin'])
         ->middlewareFor(['edit', 'update'], 'permission:pedidos.editar')
         ->middlewareFor('destroy', 'permission:pedidos.eliminar');
     Route::get('api/pedidos/buscar-producto', [PedidoVentaController::class, 'buscarProducto'])
@@ -61,22 +64,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('presupuestos', \App\Http\Controllers\PresupuestoController::class)
         ->middlewareFor(['index', 'show'], 'permission:pedidos.ver')
-        ->middlewareFor(['create', 'store'], 'permission:pedidos.crear')
+        ->middlewareFor(['create', 'store'], ['permission:pedidos.crear', 'no-superadmin'])
         ->middlewareFor(['edit', 'update'], 'permission:pedidos.editar')
         ->middlewareFor('destroy', 'permission:pedidos.eliminar');
     Route::post('presupuestos/{presupuesto}/convertir', [\App\Http\Controllers\PresupuestoController::class, 'convertir'])
-        ->name('presupuestos.convertir')->middleware('permission:pedidos.crear');
+        ->name('presupuestos.convertir')->middleware(['permission:pedidos.crear', 'no-superadmin']);
+    Route::get('presupuestos/{presupuesto}/pdf', [\App\Http\Controllers\PresupuestoController::class, 'pdf'])
+        ->name('presupuestos.pdf')->middleware('permission:pedidos.ver');
 
     Route::resource('clientes', ClienteController::class)
         ->middlewareFor(['index', 'show'], 'permission:clientes.ver')
         ->middlewareFor(['create', 'store'], 'permission:clientes.crear')
         ->middlewareFor(['edit', 'update'], 'permission:clientes.editar')
         ->middlewareFor('destroy', 'permission:clientes.eliminar');
+    Route::post('clientes/{cliente}/contactos', [\App\Http\Controllers\ContactoController::class, 'storeCliente'])
+        ->name('clientes.contactos.store')->middleware('permission:clientes.editar');
+    Route::post('clientes/{cliente}/interacciones', [\App\Http\Controllers\InteraccionController::class, 'storeCliente'])
+        ->name('clientes.interacciones.store')->middleware('permission:clientes.editar');
+    Route::post('clientes/{cliente}/documentos', [\App\Http\Controllers\DocumentoAdjuntoController::class, 'storeCliente'])
+        ->name('clientes.documentos.store')->middleware('permission:clientes.editar');
 
     Route::resource('facturas', \App\Http\Controllers\FacturaController::class)
         ->only(['index', 'show', 'destroy', 'create', 'store', 'edit', 'update'])
         ->middlewareFor(['index', 'show'], 'permission:facturas.ver')
-        ->middlewareFor(['create', 'store'], 'permission:facturas.crear')
+        ->middlewareFor(['create', 'store'], ['permission:facturas.crear', 'no-superadmin'])
         ->middlewareFor(['edit', 'update'], 'permission:facturas.crear')
         ->middlewareFor('destroy', 'permission:facturas.eliminar');
     Route::get('facturas/{factura}/pdf', [\App\Http\Controllers\FacturaController::class, 'pdf'])
@@ -86,7 +97,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->only(['index', 'show', 'destroy', 'create', 'store'])
         ->parameters(['notas-credito' => 'notaCredito'])
         ->middlewareFor(['index', 'show'], 'permission:facturas.ver')
-        ->middlewareFor(['create', 'store'], 'permission:facturas.crear')
+        ->middlewareFor(['create', 'store'], ['permission:facturas.crear', 'no-superadmin'])
         ->middlewareFor('destroy', 'permission:facturas.eliminar');
     Route::get('notas-credito/{notaCredito}/pdf', [\App\Http\Controllers\NotaCreditoController::class, 'pdf'])
         ->name('notas-credito.pdf')->middleware('permission:facturas.ver');
@@ -95,31 +106,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->only(['index', 'show', 'destroy', 'create', 'store'])
         ->parameters(['notas-remision' => 'notaRemision'])
         ->middlewareFor(['index', 'show'], 'permission:envios.ver')
-        ->middlewareFor(['create', 'store'], 'permission:envios.crear')
+        ->middlewareFor(['create', 'store'], ['permission:envios.crear', 'no-superadmin'])
         ->middlewareFor('destroy', 'permission:envios.eliminar');
     Route::get('notas-remision/{notaRemision}/pdf', [\App\Http\Controllers\NotaRemisionController::class, 'pdf'])
         ->name('notas-remision.pdf')->middleware('permission:envios.ver');
     Route::resource('pagos', \App\Http\Controllers\PagoController::class)
         ->only(['index', 'show', 'store', 'destroy', 'edit', 'update'])
         ->middlewareFor(['index', 'show'], 'permission:pagos.ver')
-        ->middlewareFor('store', 'permission:pagos.crear')
+        ->middlewareFor('store', ['permission:pagos.crear', 'no-superadmin'])
         ->middlewareFor(['edit', 'update'], 'permission:pagos.editar')
         ->middlewareFor('destroy', 'permission:pagos.eliminar');
+    Route::get('cobranzas', [\App\Http\Controllers\CobranzaController::class, 'index'])
+        ->name('cobranzas.index')->middleware('permission:pagos.ver');
     Route::resource('envios', \App\Http\Controllers\EnvioController::class)
         ->middlewareFor(['index', 'show'], 'permission:envios.ver')
-        ->middlewareFor(['create', 'store'], 'permission:envios.crear')
+        ->middlewareFor(['create', 'store'], ['permission:envios.crear', 'no-superadmin'])
         ->middlewareFor(['edit', 'update'], 'permission:envios.editar')
         ->middlewareFor('destroy', 'permission:envios.eliminar');
 
+    });
+
     // ===== COMPRAS =====
+    Route::middleware('modulo:compras')->group(function () {
     Route::resource('compras', \App\Http\Controllers\PedidoCompraController::class)
         ->parameters(['compras' => 'pedidoCompra'])
         ->middlewareFor(['index', 'show'], 'permission:compras.ver')
-        ->middlewareFor(['create', 'store'], 'permission:compras.crear')
+        ->middlewareFor(['create', 'store'], ['permission:compras.crear', 'no-superadmin'])
         ->middlewareFor(['edit', 'update'], 'permission:compras.editar')
         ->middlewareFor('destroy', 'permission:compras.eliminar');
     Route::post('compras/{pedidoCompra}/recibir', [\App\Http\Controllers\PedidoCompraController::class, 'recibirStock'])
-        ->name('compras.recibir')->middleware('permission:compras.editar');
+        ->name('compras.recibir')->middleware(['permission:compras.editar', 'no-superadmin']);
 
     Route::resource('proveedores', \App\Http\Controllers\ProveedorController::class)
         ->parameters(['proveedores' => 'proveedor'])
@@ -127,14 +143,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'permission:proveedores.crear')
         ->middlewareFor(['edit', 'update'], 'permission:proveedores.editar')
         ->middlewareFor('destroy', 'permission:proveedores.eliminar');
+    Route::post('proveedores/{proveedor}/contactos', [\App\Http\Controllers\ContactoController::class, 'storeProveedor'])
+        ->name('proveedores.contactos.store')->middleware('permission:proveedores.editar');
+    Route::post('proveedores/{proveedor}/interacciones', [\App\Http\Controllers\InteraccionController::class, 'storeProveedor'])
+        ->name('proveedores.interacciones.store')->middleware('permission:proveedores.editar');
+    Route::post('proveedores/{proveedor}/documentos', [\App\Http\Controllers\DocumentoAdjuntoController::class, 'storeProveedor'])
+        ->name('proveedores.documentos.store')->middleware('permission:proveedores.editar');
 
     Route::resource('traslados', \App\Http\Controllers\TrasladoController::class)
         ->only(['index', 'create', 'store', 'show'])
         ->middlewareFor(['index', 'show'], 'permission:compras.ver')
-        ->middlewareFor(['create', 'store'], 'permission:productos.editar');
+        ->middlewareFor(['create', 'store'], ['permission:productos.editar', 'no-superadmin']);
+    });
+
+    // ===== CRM: contactos / interacciones / adjuntos (comunes a clientes y proveedores) =====
+    Route::delete('contactos/{contacto}', [\App\Http\Controllers\ContactoController::class, 'destroy'])
+        ->name('contactos.destroy');
+    Route::delete('interacciones/{interaccion}', [\App\Http\Controllers\InteraccionController::class, 'destroy'])
+        ->name('interacciones.destroy');
+    Route::get('documentos/{documentoAdjunto}/descargar', [\App\Http\Controllers\DocumentoAdjuntoController::class, 'download'])
+        ->name('documentos.download');
+    // ===== CONTABILIDAD =====
+    Route::prefix('contabilidad')->name('contabilidad.')->middleware('modulo:contabilidad')->group(function () {
+        Route::resource('cuentas', \App\Http\Controllers\CuentaContableController::class)
+            ->except(['show'])
+            ->parameters(['cuentas' => 'cuenta'])
+            ->middlewareFor(['index'], 'permission:contabilidad.ver')
+            ->middlewareFor(['create', 'store'], 'permission:contabilidad.crear')
+            ->middlewareFor(['edit', 'update'], 'permission:contabilidad.editar')
+            ->middlewareFor('destroy', 'permission:contabilidad.editar');
+        Route::resource('asientos', \App\Http\Controllers\AsientoContableController::class)
+            ->only(['index', 'create', 'store', 'show'])
+            ->parameters(['asientos' => 'asiento'])
+            ->middlewareFor(['index', 'show'], 'permission:contabilidad.ver')
+            ->middlewareFor(['create', 'store'], ['permission:contabilidad.crear', 'no-superadmin']);
+        Route::get('reportes/balance-comprobacion', [\App\Http\Controllers\ReporteContableController::class, 'balanceComprobacion'])
+            ->name('reportes.balance-comprobacion')->middleware('permission:contabilidad.ver');
+        Route::get('reportes/estado-resultados', [\App\Http\Controllers\ReporteContableController::class, 'estadoResultados'])
+            ->name('reportes.estado-resultados')->middleware('permission:contabilidad.ver');
+        Route::get('reportes/balance-general', [\App\Http\Controllers\ReporteContableController::class, 'balanceGeneral'])
+            ->name('reportes.balance-general')->middleware('permission:contabilidad.ver');
+    });
+
+    Route::delete('documentos/{documentoAdjunto}', [\App\Http\Controllers\DocumentoAdjuntoController::class, 'destroy'])
+        ->name('documentos.destroy');
 
     // ===== REPORTES =====
-    Route::prefix('reportes')->name('reportes.')->middleware('permission:reportes.ver')->group(function () {
+    Route::prefix('reportes')->name('reportes.')->middleware(['permission:reportes.ver', 'modulo:reportes'])->group(function () {
         Route::get('stock',    [\App\Http\Controllers\ReporteController::class, 'stock'])->name('stock');
         Route::get('ventas',   [\App\Http\Controllers\ReporteController::class, 'ventas'])->name('ventas');
         Route::get('compras',  [\App\Http\Controllers\ReporteController::class, 'compras'])->name('compras')
@@ -162,6 +217,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('metodos-pago', \App\Http\Controllers\MetodoPagoController::class)
             ->parameters(['metodos-pago' => 'metodoPago'])->names('configuracion.metodos-pago')
             ->middleware('permission:configuracion.editar');
+
+        Route::post('catalogos', [\App\Http\Controllers\ConfiguracionController::class, 'storeCatalogo'])
+            ->name('catalogos.store')->middleware('permission:configuracion.editar');
+        Route::patch('catalogos/{catalogoValor}/toggle', [\App\Http\Controllers\ConfiguracionController::class, 'toggleCatalogo'])
+            ->name('catalogos.toggle')->middleware('permission:configuracion.editar');
+        Route::delete('catalogos/{catalogoValor}', [\App\Http\Controllers\ConfiguracionController::class, 'destroyCatalogo'])
+            ->name('catalogos.destroy')->middleware('permission:configuracion.editar');
+
+        Route::patch('secuencias/{secuencia}', [\App\Http\Controllers\ConfiguracionController::class, 'updateSecuencia'])
+            ->name('secuencias.update')->middleware('permission:configuracion.editar');
+
+        Route::post('campos-personalizados', [\App\Http\Controllers\ConfiguracionController::class, 'storeCampoPersonalizado'])
+            ->name('campos-personalizados.store')->middleware('permission:configuracion.editar');
+        Route::patch('campos-personalizados/{campoPersonalizado}/toggle', [\App\Http\Controllers\ConfiguracionController::class, 'toggleCampoPersonalizado'])
+            ->name('campos-personalizados.toggle')->middleware('permission:configuracion.editar');
+        Route::delete('campos-personalizados/{campoPersonalizado}', [\App\Http\Controllers\ConfiguracionController::class, 'destroyCampoPersonalizado'])
+            ->name('campos-personalizados.destroy')->middleware('permission:configuracion.editar');
     });
 
     // ===== EMPRESAS Y SUCURSALES (solo super-admin) =====
@@ -173,6 +245,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('empresas.sucursales.update')->middleware('role:admin');
     Route::delete('empresas/{empresa}/sucursales/{sucursal}', [\App\Http\Controllers\SucursalController::class, 'destroy'])
         ->name('empresas.sucursales.destroy')->middleware('role:admin');
+    Route::post('empresas/{empresa}/modulos', [\App\Http\Controllers\EmpresaController::class, 'updateModulos'])
+        ->name('empresas.modulos')->middleware('role:admin');
 
     // ===== GRUPOS DE ACCESO (solo admin) =====
     Route::resource('grupos', \App\Http\Controllers\GrupoController::class)
@@ -188,5 +262,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ===== AUDITORÍA (solo admin) =====
     Route::get('auditoria', [\App\Http\Controllers\AuditoriaController::class, 'index'])
-        ->name('auditoria.index')->middleware('role:admin');
+        ->name('auditoria.index')->middleware(['role:admin', 'modulo:auditoria']);
 });

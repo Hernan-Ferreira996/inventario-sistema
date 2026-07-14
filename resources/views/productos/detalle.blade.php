@@ -21,12 +21,20 @@
 <div class="d-grid gap-2"><a href="{{ route('productos.edit',$producto) }}" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Editar</a><a href="{{ route('productos.index') }}" class="btn btn-outline-secondary">Volver a lista</a></div>
 </div>
 <div class="col-md-8">
-<div class="card mb-3"><div class="card-header">Stock por Ubicacion</div>
-<div class="table-responsive"><table class="table mb-0"><thead><tr><th>Ubicacion</th><th class="text-end">Cantidad</th></tr></thead>
+<div class="card mb-3"><div class="card-header d-flex justify-content-between align-items-center">
+<span>Stock por Ubicacion</span>
+@if($stockComprometidoTotal > 0)<small class="text-muted">Comprometido total: <span class="text-warning fw-semibold">{{ number_format($stockComprometidoTotal,2) }}</span></small>@endif
+</div>
+<div class="table-responsive"><table class="table mb-0"><thead><tr><th>Ubicacion</th><th class="text-end">Stock físico</th><th class="text-end">Comprometido</th><th class="text-end">Disponible</th></tr></thead>
 <tbody>
 @forelse($stockPorUbicacion as $s)
-<tr><td>{{ $s->ubicacion?->nombre ?? 'Desconocida' }}</td><td class="text-end fw-semibold {{ $s->total <= 0 ? 'text-danger' : 'text-success' }}">{{ number_format($s->total,2) }}</td></tr>
-@empty<tr><td colspan="2" class="text-center text-muted py-3">Sin movimientos de stock</td></tr>
+<tr>
+<td>{{ $s->ubicacion?->nombre ?? 'Desconocida' }}</td>
+<td class="text-end fw-semibold {{ $s->total <= 0 ? 'text-danger' : 'text-success' }}">{{ number_format($s->total,2) }}</td>
+<td class="text-end {{ $s->comprometido > 0 ? 'text-warning fw-semibold' : 'text-muted' }}">{{ number_format($s->comprometido,2) }}</td>
+<td class="text-end fw-semibold {{ $s->disponible <= 0 ? 'text-danger' : 'text-success' }}">{{ number_format($s->disponible,2) }}</td>
+</tr>
+@empty<tr><td colspan="4" class="text-center text-muted py-3">Sin movimientos de stock</td></tr>
 @endforelse
 </tbody></table></div></div>
 <div class="card"><div class="card-header d-flex justify-content-between align-items-center">
@@ -56,7 +64,7 @@
 <div class="modal-body">
 <div class="mb-3"><label class="form-label fw-semibold">Ubicacion *</label>
 <select name="ubicacion_id" class="form-select" required>
-@foreach(\App\Models\Ubicacion::where('activo',true)->get() as $u)
+@foreach($ubicaciones as $u)
 <option value="{{ $u->id }}">{{ $u->nombre }}</option>
 @endforeach
 </select></div>

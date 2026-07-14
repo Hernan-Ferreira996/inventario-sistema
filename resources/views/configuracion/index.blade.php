@@ -6,6 +6,9 @@
     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-empresa"><i class="bi bi-building me-1"></i>Empresa</a></li>
     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-sistema"><i class="bi bi-gear me-1"></i>Sistema</a></li>
     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-facturacion"><i class="bi bi-receipt me-1"></i>Facturación</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-catalogos"><i class="bi bi-tags me-1"></i>Catálogos</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-numeracion"><i class="bi bi-123 me-1"></i>Numeración</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-campos"><i class="bi bi-input-cursor-text me-1"></i>Campos Personalizados</a></li>
 </ul>
 
 <div class="tab-content">
@@ -154,7 +157,7 @@
 </div>
 <div class="mt-3 p-3 bg-light rounded border small">
     <strong>Próximo número de documento:</strong>
-    {{ $config['fact_establecimiento'] }}-{{ $config['fact_punto_expedicion'] }}-{{ str_pad(\App\Models\Factura::count() + 1, 7, '0', STR_PAD_LEFT) }}
+    {{ $config['fact_establecimiento'] }}-{{ $config['fact_punto_expedicion'] }}-{{ \App\Support\Numeracion::previsualizar('facturas') }}
 </div>
 <div class="mt-4 pt-3 border-top">
     <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i>Guardar Facturación</button>
@@ -165,5 +168,197 @@
 </div></div>
 </div>
 
+{{-- TAB CATALOGOS --}}
+<div class="tab-pane fade" id="tab-catalogos">
+<div class="row justify-content-center"><div class="col-lg-10">
+<p class="text-muted small">Los estados y motivos usados en pedidos, facturas, envíos, etc. se pueden ampliar acá sin tocar código. Los valores marcados como "Sistema" vienen por defecto y no se pueden eliminar, pero sí desactivar.</p>
+@foreach($valoresCatalogo as $grupo => $valores)
+<div class="card mb-3">
+<div class="card-header fw-semibold">{{ $grupo }}</div>
+<div class="table-responsive">
+<table class="table table-sm mb-0 align-middle">
+<thead><tr><th>Código</th><th>Etiqueta</th><th>Vista previa</th><th>Origen</th><th>Estado</th><th></th></tr></thead>
+<tbody>
+@foreach($valores as $valor)
+<tr>
+    <td><code>{{ $valor->codigo }}</code></td>
+    <td>{{ $valor->etiqueta }}</td>
+    <td><span class="badge" style="background:{{ $valor->color }};color:{{ $valor->color_texto }}">{{ $valor->etiqueta }}</span></td>
+    <td>{{ $valor->protegido ? 'Sistema' : 'Propio' }}</td>
+    <td>
+        <form method="POST" action="{{ route('configuracion.catalogos.toggle', $valor) }}" class="d-inline">@csrf @method('PATCH')
+            <button class="btn btn-sm {{ $valor->activo ? 'btn-outline-success' : 'btn-outline-secondary' }}">{{ $valor->activo ? 'Activo' : 'Inactivo' }}</button>
+        </form>
+    </td>
+    <td>
+        @if(!$valor->protegido)
+        <form method="POST" action="{{ route('configuracion.catalogos.destroy', $valor) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este valor?')">@csrf @method('DELETE')
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+        @endif
+    </td>
+</tr>
+@endforeach
+</tbody>
+</table>
+</div>
+</div>
+@endforeach
+
+<div class="card">
+<div class="card-header fw-semibold">Agregar valor nuevo</div>
+<div class="card-body">
+<form method="POST" action="{{ route('configuracion.catalogos.store') }}">@csrf
+<div class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label fw-semibold">Grupo *</label>
+        <select name="grupo" class="form-select" required>
+            @foreach($gruposCatalogo as $g)
+            <option value="{{ $g }}">{{ $g }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-2"><label class="form-label fw-semibold">Código *</label>
+        <input type="text" name="codigo" class="form-control" placeholder="en_transito" required></div>
+    <div class="col-md-3"><label class="form-label fw-semibold">Etiqueta *</label>
+        <input type="text" name="etiqueta" class="form-control" placeholder="En Tránsito" required></div>
+    <div class="col-md-2"><label class="form-label fw-semibold">Color fondo</label>
+        <input type="color" name="color" class="form-control form-control-color" value="#94a3b8"></div>
+    <div class="col-md-2"><label class="form-label fw-semibold">Color texto</label>
+        <input type="color" name="color_texto" class="form-control form-control-color" value="#ffffff"></div>
+</div>
+<div class="mt-3"><button class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar</button></div>
+</form>
+</div>
+</div>
+</div></div>
+</div>
+
+{{-- TAB NUMERACION --}}
+<div class="tab-pane fade" id="tab-numeracion">
+<div class="row justify-content-center"><div class="col-lg-9">
+<p class="text-muted small">Numeración de cada tipo de documento por sucursal. Se inicializó automáticamente a partir de los últimos números usados.</p>
+<div class="card">
+<div class="table-responsive">
+<table class="table mb-0 align-middle">
+<thead><tr><th>Tipo de Documento</th><th>Sucursal</th><th>Prefijo</th><th>Dígitos</th><th>Próximo Número</th><th>Reinicio</th><th></th></tr></thead>
+<tbody>
+@forelse($secuencias as $s)
+<tr>
+    <td class="align-middle">{{ $s->tipo_documento }}</td>
+    <td class="align-middle">{{ $s->sucursal->nombre ?? '—' }}</td>
+    <td><input type="text" form="secuencia-{{ $s->id }}" name="prefijo" class="form-control form-control-sm" value="{{ $s->prefijo }}" style="width:80px"></td>
+    <td><input type="number" form="secuencia-{{ $s->id }}" name="longitud" class="form-control form-control-sm" value="{{ $s->longitud }}" style="width:70px" min="1" max="20"></td>
+    <td><input type="number" form="secuencia-{{ $s->id }}" name="proximo_numero" class="form-control form-control-sm" value="{{ $s->proximo_numero }}" style="width:90px" min="1"></td>
+    <td>
+        <select form="secuencia-{{ $s->id }}" name="reinicio" class="form-select form-select-sm" style="width:110px">
+            <option value="nunca" {{ $s->reinicio === 'nunca' ? 'selected' : '' }}>Nunca</option>
+            <option value="anual" {{ $s->reinicio === 'anual' ? 'selected' : '' }}>Anual</option>
+        </select>
+    </td>
+    <td>
+        <button form="secuencia-{{ $s->id }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-save"></i></button>
+        <form id="secuencia-{{ $s->id }}" method="POST" action="{{ route('configuracion.secuencias.update', $s) }}" class="d-none">@csrf @method('PATCH')</form>
+    </td>
+</tr>
+@empty
+<tr><td colspan="7" class="text-center text-muted py-4">Todavía no se generó ningún documento numerado.</td></tr>
+@endforelse
+</tbody>
+</table>
+</div>
+</div>
+</div></div>
+</div>
+
+{{-- TAB CAMPOS PERSONALIZADOS --}}
+<div class="tab-pane fade" id="tab-campos">
+<div class="row justify-content-center"><div class="col-lg-9">
+<p class="text-muted small">Campos adicionales que aparecen en los formularios de Clientes y Proveedores, sin necesidad de programar nada nuevo.</p>
+@foreach(['cliente' => 'Clientes', 'proveedor' => 'Proveedores'] as $entidad => $etiquetaEntidad)
+<div class="card mb-3">
+<div class="card-header fw-semibold">{{ $etiquetaEntidad }}</div>
+<div class="table-responsive">
+<table class="table table-sm mb-0 align-middle">
+<thead><tr><th>Nombre</th><th>Etiqueta</th><th>Tipo</th><th>Requerido</th><th>Estado</th><th></th></tr></thead>
+<tbody>
+@forelse(($camposPersonalizados[$entidad] ?? []) as $campo)
+<tr>
+    <td><code>{{ $campo->nombre }}</code></td>
+    <td>{{ $campo->etiqueta }}</td>
+    <td>{{ $campo->tipo }}</td>
+    <td>{{ $campo->requerido ? 'Sí' : 'No' }}</td>
+    <td>
+        <form method="POST" action="{{ route('configuracion.campos-personalizados.toggle', $campo) }}" class="d-inline">@csrf @method('PATCH')
+            <button class="btn btn-sm {{ $campo->activo ? 'btn-outline-success' : 'btn-outline-secondary' }}">{{ $campo->activo ? 'Activo' : 'Inactivo' }}</button>
+        </form>
+    </td>
+    <td>
+        <form method="POST" action="{{ route('configuracion.campos-personalizados.destroy', $campo) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este campo? Se perderán los valores cargados.')">@csrf @method('DELETE')
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+    </td>
+</tr>
+@empty
+<tr><td colspan="6" class="text-center text-muted py-3">Sin campos personalizados para {{ strtolower($etiquetaEntidad) }}.</td></tr>
+@endforelse
+</tbody>
+</table>
+</div>
+</div>
+@endforeach
+
+<div class="card">
+<div class="card-header fw-semibold">Agregar campo nuevo</div>
+<div class="card-body">
+<form method="POST" action="{{ route('configuracion.campos-personalizados.store') }}">@csrf
+<div class="row g-3">
+    <div class="col-md-2">
+        <label class="form-label fw-semibold">Aplica a *</label>
+        <select name="entidad" class="form-select" required>
+            <option value="cliente">Clientes</option>
+            <option value="proveedor">Proveedores</option>
+        </select>
+    </div>
+    <div class="col-md-2"><label class="form-label fw-semibold">Nombre interno *</label>
+        <input type="text" name="nombre" class="form-control" placeholder="fecha_nacimiento" required></div>
+    <div class="col-md-3"><label class="form-label fw-semibold">Etiqueta *</label>
+        <input type="text" name="etiqueta" class="form-control" placeholder="Fecha de Nacimiento" required></div>
+    <div class="col-md-2">
+        <label class="form-label fw-semibold">Tipo *</label>
+        <select name="tipo" class="form-select" required>
+            <option value="texto">Texto</option>
+            <option value="numero">Número</option>
+            <option value="fecha">Fecha</option>
+            <option value="booleano">Sí/No</option>
+            <option value="select">Lista de opciones</option>
+        </select>
+    </div>
+    <div class="col-md-2"><label class="form-label fw-semibold">Opciones (si es lista)</label>
+        <input type="text" name="opciones" class="form-control" placeholder="Opción A, Opción B"></div>
+    <div class="col-md-1 d-flex align-items-end">
+        <div class="form-check"><input type="checkbox" name="requerido" value="1" class="form-check-input"><label class="form-check-label small">Obligatorio</label></div>
+    </div>
+</div>
+<div class="mt-3"><button class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Agregar Campo</button></div>
+</form>
+</div>
+</div>
+</div></div>
+</div>
+
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab) {
+        const trigger = document.querySelector('a[href="#tab-' + tab + '"]');
+        if (trigger) new bootstrap.Tab(trigger).show();
+    }
+});
+</script>
+@endpush

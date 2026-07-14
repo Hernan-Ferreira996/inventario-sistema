@@ -27,8 +27,16 @@
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Estado</label>
                     <select name="estado" class="form-select">
-                        @foreach(['pendiente','aprobado','rechazado','vencido'] as $e)
-                        <option value="{{ $e }}" {{ $presupuesto->estado === $e ? 'selected' : '' }}>{{ ucfirst($e) }}</option>
+                        @foreach(array_diff(\App\Models\CatalogoValor::codigos('presupuestos.estado'), ['convertido']) as $e)
+                        <option value="{{ $e }}" {{ $presupuesto->estado === $e ? 'selected' : '' }}>{{ \App\Models\CatalogoValor::etiqueta('presupuestos.estado', $e) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Etapa del Pipeline</label>
+                    <select name="etapa" class="form-select">
+                        @foreach(\App\Models\CatalogoValor::codigos('presupuestos.etapa') as $e)
+                        <option value="{{ $e }}" {{ $presupuesto->etapa === $e ? 'selected' : '' }}>{{ \App\Models\CatalogoValor::etiqueta('presupuestos.etapa', $e) }}</option>
                         @endforeach
                     </select>
                 </div>

@@ -62,11 +62,12 @@
                         <select name="productos[{{ $i }}][producto_id]" class="form-select select-producto" required>
                             <option value="">-- Seleccionar producto --</option>
                             @foreach($productos as $p)
-                            <option value="{{ $p->id }}" data-precio="{{ $p->precio_venta_minorista }}" {{ $d->producto_id == $p->id ? 'selected' : '' }}>{{ $p->codigo }} — {{ $p->nombre }}</option>
+                            <option value="{{ $p->id }}" data-precio="{{ $p->precio_venta_minorista }}" data-disponible="{{ $p->stock_disponible }}" {{ $d->producto_id == $p->id ? 'selected' : '' }}>{{ $p->codigo }} — {{ $p->nombre }}</option>
                             @endforeach
                         </select>
+                        <small class="text-muted disponible-info"></small>
                     </div>
-                    <div class="col-md-2"><input type="number" name="productos[{{ $i }}][cantidad]" class="form-control" placeholder="Cantidad" step="0.01" min="0.01" value="{{ $d->cantidad }}" required></div>
+                    <div class="col-md-2"><input type="number" name="productos[{{ $i }}][cantidad]" class="form-control cantidad-input" placeholder="Cantidad" step="0.01" min="0.01" value="{{ $d->cantidad }}" required></div>
                     <div class="col-md-2"><div class="input-group"><span class="input-group-text">$</span><input type="number" name="productos[{{ $i }}][precio_unitario]" class="form-control precio-input" placeholder="Precio" step="0.01" min="0" value="{{ $d->precio_unitario }}" required></div></div>
                     <div class="col-md-2"><div class="input-group"><input type="number" name="productos[{{ $i }}][descuento]" class="form-control" placeholder="Desc%" step="0.01" min="0" max="100" value="{{ $d->descuento }}"><span class="input-group-text">%</span></div></div>
                     <div class="col-md-1 text-end"><button type="button" class="btn btn-outline-danger btn-sm" onclick="quitarLinea(this)"><i class="bi bi-x"></i></button></div>
@@ -95,9 +96,11 @@ function agregarLinea() {
     const nueva = primera.cloneNode(true);
     nueva.querySelectorAll('input').forEach(i => { i.name = i.name.replace(/\[\d+\]/, `[${idx}]`); if(i.name.includes('cantidad')) i.value=1; else i.value=0; });
     nueva.querySelectorAll('select').forEach(s => { s.name = s.name.replace(/\[\d+\]/, `[${idx}]`); s.value=''; });
+    nueva.querySelector('.disponible-info').textContent = '';
     idx++;
     cont.appendChild(nueva);
     nueva.querySelector('.select-producto').addEventListener('change', autocompletarPrecio);
+    nueva.querySelector('.cantidad-input').addEventListener('input', verificarDisponible);
 }
 function quitarLinea(btn) {
     if (document.querySelectorAll('.linea-item').length > 1) btn.closest('.linea-item').remove();
@@ -105,8 +108,32 @@ function quitarLinea(btn) {
 function autocompletarPrecio(e) {
     const opt = e.target.options[e.target.selectedIndex];
     e.target.closest('.linea-item').querySelector('.precio-input').value = opt.getAttribute('data-precio') || 0;
+    verificarDisponible(e);
+}
+function verificarDisponible(e) {
+    const linea = e.target.closest('.linea-item');
+    const sel = linea.querySelector('.select-producto');
+    const opt = sel.options[sel.selectedIndex];
+    const info = linea.querySelector('.disponible-info');
+    const cantidadInput = linea.querySelector('.cantidad-input');
+
+    if (!opt || !opt.value) { info.textContent = ''; return; }
+
+    const disponible = parseFloat(opt.getAttribute('data-disponible') || 0);
+    const cantidad = parseFloat(cantidadInput.value || 0);
+
+    if (cantidad > disponible) {
+        info.textContent = `⚠ Disponible: ${disponible} (ya hay ${cantidad - disponible} comprometido con este pedido)`;
+        info.classList.add('text-danger');
+        info.classList.remove('text-muted');
+    } else {
+        info.textContent = `Disponible: ${disponible}`;
+        info.classList.add('text-muted');
+        info.classList.remove('text-danger');
+    }
 }
 document.querySelectorAll('.select-producto').forEach(s => s.addEventListener('change', autocompletarPrecio));
+document.querySelectorAll('.cantidad-input').forEach(i => i.addEventListener('input', verificarDisponible));
 </script>
 @endpush
 @endsection

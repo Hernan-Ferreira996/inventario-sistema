@@ -28,11 +28,26 @@
                         <option value="entregado">Entregado</option>
                     </select>
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Transportista</label>
+                    <input type="text" name="transportista" class="form-control" value="{{ old('transportista', $ultimaRemision->transportista ?? '') }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Chofer</label>
+                    <input type="text" name="chofer" class="form-control" value="{{ old('chofer') }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Placa del Vehículo</label>
+                    <input type="text" name="vehiculo_placa" class="form-control" placeholder="ABC 123" value="{{ old('vehiculo_placa', $ultimaRemision->vehiculo_placa ?? '') }}">
+                </div>
                 <div class="col-12">
                     <label class="form-label fw-semibold">Comentarios</label>
                     <textarea name="comentarios" class="form-control" rows="2"></textarea>
                 </div>
             </div>
+            @if($ultimaRemision && ($ultimaRemision->transportista || $ultimaRemision->vehiculo_placa))
+            <div class="alert alert-light border small mb-3"><i class="bi bi-info-circle me-1"></i>Transportista y placa precargados desde la Nota de Remisión {{ $ultimaRemision->numero_completo }}.</div>
+            @endif
 
             <h6 class="fw-bold mb-2 border-bottom pb-2">Productos a Enviar</h6>
             <table class="table table-sm">

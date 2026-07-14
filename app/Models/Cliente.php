@@ -3,6 +3,11 @@
 namespace App\Models;
 
 use App\Traits\PerteneceAEmpresa;
+use App\Traits\TieneCamposPersonalizados;
+use App\Traits\TieneContactos;
+use App\Traits\TieneDocumentosAdjuntos;
+use App\Traits\TieneEtiquetas;
+use App\Traits\TieneInteracciones;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +18,17 @@ use Spatie\Activitylog\LogOptions;
 class Cliente extends Model
 {
     use PerteneceAEmpresa;
+    use TieneCamposPersonalizados;
+    use TieneContactos;
+    use TieneInteracciones;
+    use TieneEtiquetas;
+    use TieneDocumentosAdjuntos;
     use SoftDeletes, LogsActivity;
+
+    public static function entidadCamposPersonalizados(): string
+    {
+        return 'cliente';
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -28,12 +43,12 @@ class Cliente extends Model
 
     protected $fillable = [
         'nombre', 'email', 'telefono', 'direccion',
-        'ruc_nit', 'tipo_precio', 'activo',
+        'ruc_nit', 'tipo_precio', 'activo', 'limite_credito',
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
-    protected $casts = ['activo' => 'boolean'];
+    protected $casts = ['activo' => 'boolean', 'limite_credito' => 'decimal:2'];
 
     public function pedidos(): HasMany
     {

@@ -5,9 +5,12 @@ use App\Models\Presupuesto;
 use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\PedidoVenta;
+use App\Support\Configuracion;
+use App\Support\Numeracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PresupuestoController extends Controller
 {
@@ -35,7 +38,7 @@ class PresupuestoController extends Controller
     {
         $clientes  = Cliente::where("activo", true)->orderBy("nombre")->get();
         $productos = Producto::activos()->orderBy("nombre")->get();
-        $proximoNumero = "PRE-" . str_pad((Presupuesto::count() + 1), 6, "0", STR_PAD_LEFT);
+        $proximoNumero = Numeracion::previsualizar('presupuestos', null, 'PRE-');
 
         return view("presupuestos.crear", compact("clientes", "productos", "proximoNumero"));
     }
@@ -61,7 +64,7 @@ class PresupuestoController extends Controller
             $presupuesto = Presupuesto::create([
                 "cliente_id"       => $request->cliente_id,
                 "usuario_id"       => Auth::id(),
-                "numero_documento" => "PRE-" . str_pad((Presupuesto::count() + 1), 6, "0", STR_PAD_LEFT),
+                "numero_documento" => Numeracion::siguiente('presupuestos', null, 'PRE-'),
                 "fecha_emision"    => $request->fecha_emision,
                 "fecha_validez"    => $request->fecha_validez,
                 "comentarios"      => $request->comentarios,
@@ -69,6 +72,7 @@ class PresupuestoController extends Controller
                 "impuesto_total"   => 0,
                 "total"            => $subtotal,
                 "estado"           => "pendiente",
+                "etapa"            => "prospecto",
             ]);
 
             foreach ($request->productos as $d) {
@@ -96,6 +100,16 @@ class PresupuestoController extends Controller
         return view("presupuestos.detalle", compact("presupuesto"));
     }
 
+    public function pdf(Presupuesto $presupuesto)
+    {
+        $presupuesto->load(["cliente", "detalles.producto"]);
+        $config = Configuracion::obtener();
+
+        $pdf = Pdf::loadView("presupuestos.pdf", compact("presupuesto", "config"))->setPaper("a4");
+
+        return $pdf->stream("presupuesto-{$presupuesto->numero_documento}.pdf");
+    }
+
     public function edit(Presupuesto $presupuesto)
     {
         if ($presupuesto->estado === "convertido") {
@@ -115,7 +129,9 @@ class PresupuestoController extends Controller
             "cliente_id"    => "required|exists:clientes,id",
             "fecha_emision" => "required|date",
             "fecha_validez" => "nullable|date|after_or_equal:fecha_emision",
-            "estado"        => "required|in:pendiente,aprobado,rechazado,vencido",
+            // 'convertido' se excluye a propósito: es una transición de solo-sistema vía convertir(), no editable a mano
+            "estado"        => "required|in:" . implode(',', array_diff(\App\Models\CatalogoValor::codigos('presupuestos.estado'), ['convertido'])),
+            "etapa"         => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('presupuestos.etapa')),
             "comentarios"   => "nullable|string",
             "productos"     => "required|array|min:1",
             "productos.*.producto_id"     => "required|exists:productos,id",
@@ -132,6 +148,7 @@ class PresupuestoController extends Controller
             "fecha_emision"  => $request->fecha_emision,
             "fecha_validez"  => $request->fecha_validez,
             "estado"         => $request->estado,
+            "etapa"          => $request->etapa,
             "comentarios"    => $request->comentarios,
             "subtotal"       => $subtotal,
             "total"          => $subtotal,
@@ -179,7 +196,7 @@ class PresupuestoController extends Controller
             $pedido = PedidoVenta::create([
                 "cliente_id"         => $presupuesto->cliente_id,
                 "usuario_id"         => Auth::id(),
-                "numero_referencia"  => "PV-" . str_pad((PedidoVenta::count() + 1), 6, "0", STR_PAD_LEFT),
+                "numero_referencia"  => Numeracion::siguiente('pedidos_venta', $presupuesto->sucursal_id, 'PV-'),
                 "comentarios"        => "Generado desde presupuesto {$presupuesto->numero_documento}",
                 "fecha_pedido"       => now()->toDateString(),
                 "total"              => $presupuesto->total,
@@ -198,7 +215,7 @@ class PresupuestoController extends Controller
                 ]);
             }
 
-            $presupuesto->update(["estado" => "convertido", "pedido_id" => $pedido->id]);
+            $presupuesto->update(["estado" => "convertido", "etapa" => "ganado", "pedido_id" => $pedido->id]);
 
             return $pedido;
         });

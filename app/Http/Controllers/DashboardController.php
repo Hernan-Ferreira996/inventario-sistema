@@ -52,7 +52,7 @@ class DashboardController extends Controller
 
         $stockBajo = Producto::activos()
             ->withSum('movimientos', 'cantidad')
-            ->having('movimientos_sum_cantidad', '<=', 5)
+            ->stockBajo()
             ->take(5)
             ->get();
 

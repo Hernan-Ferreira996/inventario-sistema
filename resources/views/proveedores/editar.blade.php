@@ -21,6 +21,8 @@
     <input type="checkbox" name="activo" value="1" class="form-check-input" {{ $proveedor->activo ? 'checked' : '' }}>
     <label class="form-check-label">Proveedor activo</label>
 </div></div>
+<div class="col-12"><label class="form-label fw-semibold">Etiquetas</label><input type="text" name="etiquetas" class="form-control" placeholder="Confiable, Entrega rápida" value="{{ old('etiquetas', $etiquetasTexto) }}"><small class="text-muted">Separadas por coma</small></div>
+<x-campos-personalizados :campos="$campos" :valores="$valores" />
 </div>
 <div class="d-flex gap-2 mt-4">
     <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Actualizar</button>

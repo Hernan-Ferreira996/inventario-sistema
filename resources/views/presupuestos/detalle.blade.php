@@ -12,8 +12,10 @@
             <div class="list-group-item"><small class="text-muted d-block">Fecha Emisión</small>{{ $presupuesto->fecha_emision->format('d/m/Y') }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Válido Hasta</small>{{ $presupuesto->fecha_validez?->format('d/m/Y') ?? 'Sin límite' }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Estado</small>
-                @php $colores = ['pendiente'=>'bg-warning text-dark','aprobado'=>'bg-success','rechazado'=>'bg-danger','vencido'=>'bg-secondary','convertido'=>'bg-primary']; @endphp
-                <span class="badge {{ $colores[$presupuesto->estado] ?? 'bg-secondary' }}">{{ ucfirst($presupuesto->estado) }}</span>
+                <x-badge-estado grupo="presupuestos.estado" :valor="$presupuesto->estado" />
+            </div>
+            <div class="list-group-item"><small class="text-muted d-block">Etapa del Pipeline</small>
+                <x-badge-estado grupo="presupuestos.etapa" :valor="$presupuesto->etapa" />
             </div>
             <div class="list-group-item"><small class="text-muted d-block">Total</small><strong class="fs-5">{{ number_format($presupuesto->total,0,',','.') }}</strong></div>
         </div>
@@ -34,6 +36,7 @@
             <input type="hidden" name="productos[{{ $i }}][descuento]" value="{{ $d->descuento }}">
             @endforeach
             <input type="hidden" name="estado" value="aprobado">
+            <input type="hidden" name="etapa" value="{{ $presupuesto->etapa }}">
             <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Aprobar Presupuesto</button>
         </form>
         <a href="{{ route('presupuestos.edit',$presupuesto) }}" class="btn btn-outline-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
@@ -52,6 +55,7 @@
         @endif
         @endcan
 
+        <a href="{{ route('presupuestos.pdf',$presupuesto) }}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-file-pdf me-1"></i>Ver / Descargar PDF</a>
         <a href="{{ route('presupuestos.index') }}" class="btn btn-outline-secondary">Volver a lista</a>
     </div>
 </div>

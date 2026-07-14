@@ -76,8 +76,11 @@
                     <td>{{ $producto->categoria?->nombre ?? '—' }}</td>
                     <td>{{ $producto->unidad?->abreviatura ?? $producto->unidad?->nombre ?? '—' }}</td>
                     <td class="text-end">
-                        @php $stock = $producto->movimientos_sum_cantidad ?? 0; @endphp
-                        <span class="fw-semibold {{ $stock <= 0 ? 'text-danger' : ($stock <= 5 ? 'text-warning' : 'text-success') }}">
+                        @php
+                            $stock = $producto->movimientos_sum_cantidad ?? 0;
+                            $minimo = $producto->stock_minimo ?? $stockMinimoDefault;
+                        @endphp
+                        <span class="fw-semibold {{ $stock <= 0 ? 'text-danger' : ($stock <= $minimo ? 'text-warning' : 'text-success') }}">
                             {{ number_format($stock, 2) }}
                         </span>
                     </td>

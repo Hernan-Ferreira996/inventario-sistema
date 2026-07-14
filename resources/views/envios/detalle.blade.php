@@ -15,6 +15,9 @@
                 @php $colores=['preparando'=>'bg-warning text-dark','enviado'=>'bg-info text-dark','entregado'=>'bg-success','devuelto'=>'bg-danger']; @endphp
                 <span class="badge {{ $colores[$envio->estado] ?? 'bg-secondary' }}">{{ ucfirst($envio->estado) }}</span>
             </div>
+            @if($envio->transportista)<div class="list-group-item"><small class="text-muted d-block">Transportista</small>{{ $envio->transportista }}</div>@endif
+            @if($envio->chofer)<div class="list-group-item"><small class="text-muted d-block">Chofer</small>{{ $envio->chofer }}</div>@endif
+            @if($envio->vehiculo_placa)<div class="list-group-item"><small class="text-muted d-block">Vehículo</small>{{ $envio->vehiculo_placa }}</div>@endif
         </div>
     </div>
     <div class="d-grid gap-2">

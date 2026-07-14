@@ -35,6 +35,9 @@ class GrupoController extends Controller
             'Reportes' => [
                 'reportes' => 'Reportes',
             ],
+            'Contabilidad' => [
+                'contabilidad' => 'Plan de Cuentas y Asientos',
+            ],
             'Administración' => [
                 'usuarios'       => 'Usuarios',
                 'configuracion'  => 'Configuración',

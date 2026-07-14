@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Models\CampoPersonalizado;
 use App\Models\Proveedor;
 use App\Models\PedidoCompra;
 use Illuminate\Http\Request;
@@ -26,7 +27,8 @@ class ProveedorController extends Controller
 
     public function create()
     {
-        return view('proveedores.crear');
+        $campos = CampoPersonalizado::paraEntidad('proveedor');
+        return view('proveedores.crear', compact('campos'));
     }
 
     public function store(Request $request)
@@ -40,7 +42,9 @@ class ProveedorController extends Controller
             'contacto'  => 'nullable|string|max:100',
         ]);
         $data['activo'] = true;
-        Proveedor::create($data);
+        $proveedor = Proveedor::create($data);
+        $proveedor->guardarCamposPersonalizados($request->input('campos_personalizados', []));
+        $proveedor->sincronizarEtiquetas($request->input('etiquetas'));
         return redirect()->route('proveedores.index')->with('success', 'Proveedor creado correctamente.');
     }
 
@@ -53,12 +57,39 @@ class ProveedorController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
-        return view('proveedores.detalle', compact('proveedor', 'ultimas'));
+        $campos = $proveedor->camposPersonalizadosDisponibles();
+        $valoresCamposPersonalizados = $proveedor->valoresCamposPersonalizadosPorNombre();
+        $contactos = $proveedor->contactos;
+        $interacciones = $proveedor->interacciones()->with('usuario')->get();
+        $documentos = $proveedor->documentosAdjuntos()->with('usuario')->get();
+        $etiquetas = $proveedor->etiquetas;
+        $lineaDeTiempo = $this->construirLineaDeTiempo($proveedor, $ultimas, $interacciones);
+        return view('proveedores.detalle', compact(
+            'proveedor', 'ultimas', 'campos', 'valoresCamposPersonalizados',
+            'contactos', 'interacciones', 'documentos', 'etiquetas', 'lineaDeTiempo'
+        ));
+    }
+
+    private function construirLineaDeTiempo(Proveedor $proveedor, $ultimasCompras, $interacciones): \Illuminate\Support\Collection
+    {
+        $eventos = collect();
+
+        foreach ($ultimasCompras as $c) {
+            $eventos->push(['fecha' => $c->fecha_pedido, 'tipo' => 'Compra', 'icono' => 'bi-bag-check', 'texto' => "Compra {$c->numero_referencia} por " . number_format($c->total, 0, ',', '.')]);
+        }
+        foreach ($interacciones as $i) {
+            $eventos->push(['fecha' => $i->fecha, 'tipo' => 'Interacción', 'icono' => 'bi-chat-dots', 'texto' => \App\Models\CatalogoValor::etiqueta('interacciones.tipo', $i->tipo) . ': ' . $i->descripcion]);
+        }
+
+        return $eventos->sortByDesc('fecha')->take(20)->values();
     }
 
     public function edit(Proveedor $proveedor)
     {
-        return view('proveedores.editar', compact('proveedor'));
+        $campos = $proveedor->camposPersonalizadosDisponibles();
+        $valores = $proveedor->valoresCamposPersonalizadosPorNombre();
+        $etiquetasTexto = $proveedor->etiquetas->pluck('nombre')->implode(', ');
+        return view('proveedores.editar', compact('proveedor', 'campos', 'valores', 'etiquetasTexto'));
     }
 
     public function update(Request $request, Proveedor $proveedor)
@@ -73,6 +104,8 @@ class ProveedorController extends Controller
         ]);
         $data['activo'] = $request->boolean('activo');
         $proveedor->update($data);
+        $proveedor->guardarCamposPersonalizados($request->input('campos_personalizados', []));
+        $proveedor->sincronizarEtiquetas($request->input('etiquetas'));
         return redirect()->route('proveedores.show', $proveedor)->with('success', 'Proveedor actualizado.');
     }
 

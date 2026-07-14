@@ -13,6 +13,9 @@
 <div class="col-md-6"><label class="form-label fw-semibold">Tipo Precio</label>
 <select name="tipo_precio" class="form-select"><option value="minorista" {{ $cliente->tipo_precio == 'minorista' ? 'selected' : '' }}>Minorista</option><option value="mayorista" {{ $cliente->tipo_precio == 'mayorista' ? 'selected' : '' }}>Mayorista</option></select></div>
 <div class="col-md-6"><div class="form-check mt-4"><input type="checkbox" name="activo" value="1" class="form-check-input" {{ $cliente->activo ? 'checked' : '' }}><label class="form-check-label">Cliente activo</label></div></div>
+<div class="col-md-6"><label class="form-label fw-semibold">Límite de Crédito</label><input type="number" step="0.01" min="0" name="limite_credito" class="form-control" value="{{ old('limite_credito', $cliente->limite_credito) }}"></div>
+<div class="col-12"><label class="form-label fw-semibold">Etiquetas</label><input type="text" name="etiquetas" class="form-control" placeholder="VIP, Mayorista frecuente" value="{{ old('etiquetas', $etiquetasTexto) }}"><small class="text-muted">Separadas por coma</small></div>
+<x-campos-personalizados :campos="$campos" :valores="$valores" />
 </div>
 <div class="d-flex gap-2 mt-3"><button class="btn btn-primary">Actualizar</button><a href="{{ route('clientes.show',$cliente) }}" class="btn btn-outline-secondary">Cancelar</a></div>
 </form></div></div>

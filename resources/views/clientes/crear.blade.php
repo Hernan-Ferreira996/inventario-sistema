@@ -12,6 +12,9 @@
 <div class="col-12"><label class="form-label fw-semibold">Direccion</label><textarea name="direccion" class="form-control" rows="2">{{ old('direccion') }}</textarea></div>
 <div class="col-md-6"><label class="form-label fw-semibold">Tipo de Precio *</label>
 <select name="tipo_precio" class="form-select"><option value="minorista" {{ old('tipo_precio') == 'minorista' ? 'selected' : '' }}>Minorista</option><option value="mayorista" {{ old('tipo_precio') == 'mayorista' ? 'selected' : '' }}>Mayorista</option></select></div>
+<div class="col-md-6"><label class="form-label fw-semibold">Límite de Crédito</label><input type="number" step="0.01" min="0" name="limite_credito" class="form-control" value="{{ old('limite_credito') }}"></div>
+<div class="col-12"><label class="form-label fw-semibold">Etiquetas</label><input type="text" name="etiquetas" class="form-control" placeholder="VIP, Mayorista frecuente" value="{{ old('etiquetas') }}"><small class="text-muted">Separadas por coma</small></div>
+<x-campos-personalizados :campos="$campos" />
 </div>
 <div class="d-flex gap-2 mt-3"><button class="btn btn-primary">Guardar</button><a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary">Cancelar</a></div>
 </form></div></div>

@@ -25,7 +25,7 @@
                 <td>{{ $p->proveedor->nombre ?? '—' }}</td>
                 <td>{{ $p->fecha_pedido->format('d/m/Y') }}</td>
                 <td class="text-end">{{ number_format($p->total,0,',','.') }}</td>
-                <td><span class="badge badge-estado-{{ $p->estado }}">{{ ucfirst($p->estado) }}</span></td>
+                <td><x-badge-estado grupo="pedidos_compra.estado" :valor="$p->estado" /></td>
             </tr>
             @empty
             <tr><td colspan="5" class="text-center py-5 text-muted">Sin compras en este período</td></tr>

@@ -11,8 +11,8 @@
                 <div class="list-group-item"><small class="text-muted d-block">Cliente</small><strong>{{ $pedido->cliente?->nombre ?? '—' }}</strong></div>
                 <div class="list-group-item"><small class="text-muted d-block">Fecha Pedido</small>{{ $pedido->fecha_pedido->format('d/m/Y') }}</div>
                 <div class="list-group-item"><small class="text-muted d-block">Fecha Entrega</small>{{ $pedido->fecha_entrega?->format('d/m/Y') ?? '—' }}</div>
-                <div class="list-group-item"><small class="text-muted d-block">Estado</small><span class="badge badge-estado-{{ $pedido->estado }}">{{ ucfirst($pedido->estado) }}</span></div>
-                <div class="list-group-item"><small class="text-muted d-block">Factura</small><span class="badge badge-estado-{{ $pedido->estado_factura }}">{{ ucfirst($pedido->estado_factura) }}</span></div>
+                <div class="list-group-item"><small class="text-muted d-block">Estado</small><x-badge-estado grupo="pedidos_venta.estado" :valor="$pedido->estado" /></div>
+                <div class="list-group-item"><small class="text-muted d-block">Factura</small><x-badge-estado grupo="pedidos_venta.estado_factura" :valor="$pedido->estado_factura" /></div>
             </div>
         </div>
         <div class="card">
@@ -63,6 +63,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>Documentos</span>
                 <div class="d-flex gap-2">
+                    @if(!Auth::user()?->esSuperAdmin())
                     @can('facturas.crear')
                     @if($pedido->facturas->isEmpty())
                     <a href="{{ route('facturas.create',['pedido' => $pedido->id]) }}" class="btn btn-sm btn-primary"><i class="bi bi-receipt me-1"></i>Generar Factura</a>
@@ -72,6 +73,7 @@
                     <a href="{{ route('notas-remision.create',['pedido' => $pedido->id]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-truck me-1"></i>Nota de Remisión</a>
                     <a href="{{ route('envios.create',['pedido' => $pedido->id]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-seam me-1"></i>Registrar Envío</a>
                     @endcan
+                    @endif
                 </div>
             </div>
             @if($pedido->facturas->isNotEmpty())
@@ -84,7 +86,7 @@
                         <td>{{ $f->numero_documento }}</td>
                         <td>{{ $f->fecha_factura->format('d/m/Y') }}</td>
                         <td class="text-end">{{ number_format($f->total,0,',','.') }}</td>
-                        <td><span class="badge badge-estado-{{ $f->estado }}">{{ ucfirst($f->estado) }}</span></td>
+                        <td><x-badge-estado grupo="facturas.estado" :valor="$f->estado" /></td>
                         <td><a href="{{ route('facturas.show',$f) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a></td>
                     </tr>
                     @endforeach

@@ -24,8 +24,28 @@
                 </select>
             </div>
             <div class="mb-3">
+                <label class="form-label fw-semibold">Transportista</label>
+                <input type="text" name="transportista" class="form-control" value="{{ old('transportista', $envio->transportista) }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Chofer</label>
+                <input type="text" name="chofer" class="form-control" value="{{ old('chofer', $envio->chofer) }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Placa del Vehículo</label>
+                <input type="text" name="vehiculo_placa" class="form-control" placeholder="ABC 123" value="{{ old('vehiculo_placa', $envio->vehiculo_placa) }}">
+            </div>
+            <div class="mb-3">
                 <label class="form-label fw-semibold">Comentarios</label>
                 <textarea name="comentarios" class="form-control" rows="2">{{ $envio->comentarios }}</textarea>
+            </div>
+            <div class="alert alert-light border small">
+                <i class="bi bi-envelope me-1"></i>Si cambiás el estado, se notifica automáticamente por email al cliente
+                @if($envio->pedido?->cliente?->email)
+                    (<strong>{{ $envio->pedido->cliente->email }}</strong>).
+                @else
+                    — este cliente no tiene email cargado, no se enviará notificación.
+                @endif
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Actualizar</button>

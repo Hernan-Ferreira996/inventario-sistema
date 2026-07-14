@@ -18,7 +18,7 @@ Documento generado en <strong>modo demo</strong> — no tiene validez tributaria
             <div class="list-group-item"><small class="text-muted d-block">Cliente</small><strong>{{ $factura->pedido->cliente->nombre ?? '—' }}</strong></div>
             <div class="list-group-item"><small class="text-muted d-block">Fecha</small>{{ $factura->fecha_factura->format('d/m/Y') }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Condición de Venta</small>{{ ucfirst($factura->condicion_venta) }}</div>
-            <div class="list-group-item"><small class="text-muted d-block">Estado</small><span class="badge badge-estado-{{ $factura->estado }}">{{ ucfirst($factura->estado) }}</span></div>
+            <div class="list-group-item"><small class="text-muted d-block">Estado</small><x-badge-estado grupo="facturas.estado" :valor="$factura->estado" /></div>
         </div>
     </div>
     <div class="card mb-3">
@@ -41,7 +41,7 @@ Documento generado en <strong>modo demo</strong> — no tiene validez tributaria
     </div>
     <div class="d-grid gap-2">
         @can('pagos.crear')
-        @if($factura->saldo_pendiente > 0 && $factura->estado !== 'anulada')
+        @if(!Auth::user()?->esSuperAdmin() && $factura->saldo_pendiente > 0 && $factura->estado !== 'anulada')
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalPago"><i class="bi bi-cash-coin me-1"></i>Registrar Pago</button>
         @endif
         @endcan
@@ -50,6 +50,11 @@ Documento generado en <strong>modo demo</strong> — no tiene validez tributaria
         <a href="{{ route('facturas.edit',$factura) }}" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i>Editar Factura</a>
         @endif
         @endcan
+        @if(!Auth::user()?->esSuperAdmin() && $factura->pedido)
+        @can('envios.crear')
+        <a href="{{ route('notas-remision.create',['pedido' => $factura->pedido_id]) }}" class="btn btn-outline-secondary"><i class="bi bi-truck me-1"></i>Generar Nota de Remisión</a>
+        @endcan
+        @endif
         <a href="{{ route('facturas.pdf',$factura) }}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-file-pdf me-1"></i>Ver / Descargar PDF</a>
         @if($factura->pedido && $factura->pedido->cliente)
         <a href="{{ route('facturas.index',['cliente_id' => $factura->pedido->cliente->id]) }}" class="btn btn-outline-secondary">
@@ -57,7 +62,9 @@ Documento generado en <strong>modo demo</strong> — no tiene validez tributaria
         </a>
         @endif
         @can('facturas.crear')
+        @if(!Auth::user()?->esSuperAdmin())
         <a href="{{ route('notas-credito.create',['factura' => $factura->id]) }}" class="btn btn-outline-danger"><i class="bi bi-arrow-return-left me-1"></i>Generar Nota de Crédito</a>
+        @endif
         @endcan
         <a href="{{ route('facturas.index') }}" class="btn btn-outline-secondary">Volver a lista</a>
     </div>

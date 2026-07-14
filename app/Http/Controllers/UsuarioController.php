@@ -62,7 +62,14 @@ class UsuarioController extends Controller
     public function edit(User $usuario)
     {
         $grupos = Role::with("permissions")->orderBy("name")->get();
-        return view("usuarios.editar", compact("usuario", "grupos"));
+        $sucursales = $usuario->empresa_id
+            ? \App\Models\Sucursal::where("empresa_id", $usuario->empresa_id)->orderBy("nombre")->get()
+            : collect();
+        $ubicaciones = $usuario->empresa_id
+            ? \App\Models\Ubicacion::where("empresa_id", $usuario->empresa_id)->where("activo", true)
+                ->with("sucursal")->orderBy("nombre")->get()->groupBy(fn($u) => $u->sucursal?->nombre ?? "Sin sucursal")
+            : collect();
+        return view("usuarios.editar", compact("usuario", "grupos", "sucursales", "ubicaciones"));
     }
 
     public function update(Request $request, User $usuario)
@@ -72,6 +79,10 @@ class UsuarioController extends Controller
             "email"  => "required|email|unique:users,email," . $usuario->id,
             "grupos" => "nullable|array",
             "grupos.*" => "exists:roles,id",
+            "sucursales" => "nullable|array",
+            "sucursales.*" => "exists:sucursales,id",
+            "ubicaciones" => "nullable|array",
+            "ubicaciones.*" => "exists:ubicaciones,id",
         ]);
 
         $usuario->update([
@@ -88,6 +99,11 @@ class UsuarioController extends Controller
             ? Role::whereIn("id", $request->grupos)->pluck("name")->toArray()
             : [];
         $usuario->syncRoles($roles);
+
+        if ($usuario->empresa_id) {
+            $usuario->sucursales()->sync($request->input("sucursales", []));
+            $usuario->ubicaciones()->sync($request->input("ubicaciones", []));
+        }
 
         return redirect()->route("usuarios.index")->with("success", "Usuario actualizado.");
     }

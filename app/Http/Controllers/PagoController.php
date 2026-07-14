@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Pago;
 use App\Models\Factura;
 use App\Models\MetodoPago;
+use App\Events\PagoRegistrado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -47,8 +48,8 @@ class PagoController extends Controller
             return back()->withInput()->with("error", "El monto excede el saldo pendiente de la factura (" . number_format($saldo, 0, ",", ".") . ").");
         }
 
-        DB::transaction(function () use ($request, $factura) {
-            Pago::create([
+        $pago = DB::transaction(function () use ($request, $factura) {
+            $pago = Pago::create([
                 "pedido_id"      => $factura->pedido_id,
                 "factura_id"     => $factura->id,
                 "usuario_id"     => \Illuminate\Support\Facades\Auth::id(),
@@ -69,7 +70,11 @@ class PagoController extends Controller
             if ($factura->pedido) {
                 $factura->pedido->increment("monto_pagado", $request->monto);
             }
+
+            return $pago;
         });
+
+        event(new PagoRegistrado($pago));
 
         return redirect()->route("facturas.show", $factura)->with("success", "Pago registrado correctamente.");
     }

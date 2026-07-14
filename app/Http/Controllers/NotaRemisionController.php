@@ -6,6 +6,7 @@ use App\Models\PedidoVenta;
 use App\Models\Ubicacion;
 use App\Models\MovimientoStock;
 use App\Support\Configuracion;
+use App\Support\Numeracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +24,8 @@ class NotaRemisionController extends Controller
     {
         $pedido = PedidoVenta::with(['cliente', 'detalles.producto'])->findOrFail($request->pedido);
         $config = Configuracion::obtener();
-        $ubicaciones = Ubicacion::where('activo', true)->orderBy('nombre')->get();
-        $proximoNumero = $this->generarNumero();
+        $ubicaciones = Ubicacion::where('activo', true)->visiblesPara(Auth::user())->orderBy('nombre')->get();
+        $proximoNumero = Numeracion::previsualizar('notas_remision', $pedido->sucursal_id);
 
         return view('notas-remision.crear', compact('pedido', 'config', 'ubicaciones', 'proximoNumero'));
     }
@@ -34,7 +35,7 @@ class NotaRemisionController extends Controller
         $request->validate([
             'pedido_id'           => 'required|exists:pedidos_venta,id',
             'ubicacion_origen_id' => 'required|exists:ubicaciones,id',
-            'motivo'              => 'required|in:venta,consignacion,traslado,devolucion,otro',
+            'motivo'              => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('notas_remision.motivo')),
             'direccion_destino'   => 'nullable|string|max:255',
             'transportista'       => 'nullable|string|max:150',
             'vehiculo_placa'      => 'nullable|string|max:20',
@@ -43,14 +44,17 @@ class NotaRemisionController extends Controller
             'productos.*.cantidad'    => 'required|numeric|min:0.01',
         ]);
 
+        Ubicacion::verificarAcceso(Auth::user(), (int) $request->ubicacion_origen_id);
+
         $config = Configuracion::obtener();
 
-        $nota = DB::transaction(function () use ($request, $config) {
+        $pedidoParaSucursal = PedidoVenta::findOrFail($request->pedido_id);
+        $nota = DB::transaction(function () use ($request, $config, $pedidoParaSucursal) {
             $nota = NotaRemision::create([
                 'pedido_id'           => $request->pedido_id,
                 'usuario_id'          => Auth::id(),
                 'ubicacion_origen_id' => $request->ubicacion_origen_id,
-                'numero_documento'    => $this->generarNumero(),
+                'numero_documento'    => Numeracion::siguiente('notas_remision', $pedidoParaSucursal->sucursal_id),
                 'timbrado'            => $config['fact_timbrado'],
                 'establecimiento'     => $config['fact_establecimiento'],
                 'punto_expedicion'    => $config['fact_punto_expedicion'],
@@ -72,14 +76,16 @@ class NotaRemisionController extends Controller
                 // La Nota de Remisión documenta la salida física de mercadería:
                 // se descuenta el stock del almacén de origen al momento de emitirla.
                 MovimientoStock::create([
-                    'producto_id'      => $p['producto_id'],
-                    'ubicacion_id'     => $request->ubicacion_origen_id,
-                    'usuario_id'       => Auth::id(),
-                    'cantidad'         => -abs($p['cantidad']),
-                    'tipo'             => 'salida',
-                    'referencia'       => $nota->numero_completo,
-                    'notas'            => 'Salida por Nota de Remisión',
-                    'fecha_movimiento' => now(),
+                    'producto_id'           => $p['producto_id'],
+                    'ubicacion_id'          => $request->ubicacion_origen_id,
+                    'usuario_id'            => Auth::id(),
+                    'cantidad'              => -abs($p['cantidad']),
+                    'tipo'                  => 'salida',
+                    'referencia'            => $nota->numero_completo,
+                    'notas'                 => 'Salida por Nota de Remisión',
+                    'fecha_movimiento'      => now(),
+                    'origen_documento_type' => $nota->getMorphClass(),
+                    'origen_documento_id'   => $nota->id,
                 ]);
             }
 
@@ -112,11 +118,5 @@ class NotaRemisionController extends Controller
     {
         $notaRemision->delete();
         return redirect()->route('notas-remision.index')->with('success', 'Nota de remisión eliminada.');
-    }
-
-    private function generarNumero(): string
-    {
-        $ultimo = NotaRemision::max('id') ?? 0;
-        return str_pad($ultimo + 1, 7, '0', STR_PAD_LEFT);
     }
 }

@@ -3,7 +3,9 @@
 @section('contenido')
 <div class="d-flex justify-content-between mb-3">
     <h5>Pedidos de Venta</h5>
+    @if(!Auth::user()?->esSuperAdmin())
     <a href="{{ route('pedidos.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Pedido</a>
+    @endif
 </div>
 <div class="card mb-3"><div class="card-body py-2">
 <form method="GET" class="row g-2 align-items-center">
@@ -52,8 +54,8 @@
                     <td>{{ $p->fecha_pedido->format('d/m/Y') }}</td>
                     <td class="text-end fw-semibold">{{ number_format($p->total,2) }}</td>
                     <td class="text-end text-success">{{ number_format($p->monto_pagado,2) }}</td>
-                    <td><span class="badge badge-estado-{{ $p->estado_factura }}">{{ ucfirst($p->estado_factura) }}</span></td>
-                    <td><span class="badge badge-estado-{{ $p->estado }}">{{ ucfirst($p->estado) }}</span></td>
+                    <td><x-badge-estado grupo="pedidos_venta.estado_factura" :valor="$p->estado_factura" /></td>
+                    <td><x-badge-estado grupo="pedidos_venta.estado" :valor="$p->estado" /></td>
                     <td>
                         <a href="{{ route('pedidos.show',$p) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
                         <form method="POST" action="{{ route('pedidos.destroy',$p) }}" class="d-inline" onsubmit="return confirm('¿Eliminar pedido?')">
@@ -65,7 +67,7 @@
                 @empty
                 <tr><td colspan="8" class="text-center py-5 text-muted">
                     <i class="bi bi-cart3 d-block mb-2" style="font-size:2rem"></i>
-                    Sin pedidos registrados. <a href="{{ route('pedidos.create') }}">Crear primero</a>
+                    Sin pedidos registrados. @if(!Auth::user()?->esSuperAdmin())<a href="{{ route('pedidos.create') }}">Crear primero</a>@endif
                 </td></tr>
                 @endforelse
             </tbody>

@@ -34,7 +34,7 @@
                 <td>{{ $f->fecha_factura->format('d/m/Y') }}</td>
                 <td class="text-end fw-semibold">{{ number_format($f->total,0,',','.') }}</td>
                 <td class="text-end text-success">{{ number_format($f->monto_pagado,0,',','.') }}</td>
-                <td class="text-center"><span class="badge badge-estado-{{ $f->estado }}">{{ ucfirst($f->estado) }}</span></td>
+                <td class="text-center"><x-badge-estado grupo="facturas.estado" :valor="$f->estado" /></td>
                 <td class="text-center">
                     @if($f->modo === 'local')<span class="badge bg-warning text-dark">Demo</span>
                     @else<span class="badge bg-success">Electrónico</span>@endif

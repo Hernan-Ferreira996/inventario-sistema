@@ -14,7 +14,12 @@ body{background:#f1f5f9;min-height:100vh}
 #sidebar .brand{color:#fff;font-size:1.1rem;font-weight:700;padding:1.2rem 1.25rem;border-bottom:1px solid #334155;display:block;text-decoration:none}
 #sidebar .nav-link{color:#94a3b8;padding:.55rem 1.25rem;font-size:.9rem;border-radius:0;display:flex;align-items:center;gap:.55rem;transition:background .15s}
 #sidebar .nav-link:hover,#sidebar .nav-link.active{color:#fff;background:#334155}
-#sidebar .nav-section{color:#64748b;font-size:.7rem;font-weight:600;letter-spacing:.08em;padding:.75rem 1.25rem .25rem;text-transform:uppercase}
+#sidebar .nav-section{color:#64748b;font-size:.7rem;font-weight:600;letter-spacing:.08em;padding:.6rem 1.25rem;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none}
+#sidebar .nav-section:hover{color:#94a3b8}
+#sidebar .nav-section .toggle-icon{transition:transform .15s;font-size:.75rem}
+#sidebar .nav-section.collapsed .toggle-icon{transform:rotate(-90deg)}
+#sidebar .nav-group{overflow:hidden}
+#sidebar .nav-group.collapsed{display:none}
 #topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:.55rem 1.5rem;position:sticky;top:0;z-index:99}
 #main-content{margin-left:var(--sidebar-w);padding:1.5rem}
 .badge-estado-pendiente{background:#fbbf24;color:#000}
@@ -37,6 +42,7 @@ body{background:#f1f5f9;min-height:100vh}
         <span class="nav-section">Principal</span>
         <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="bi bi-grid-1x2"></i>Panel</a>
 
+        @modulo('inventario')
         @canany(['productos.ver', 'categorias.ver'])
         <span class="nav-section">Catálogos</span>
         @can('productos.ver')
@@ -46,8 +52,10 @@ body{background:#f1f5f9;min-height:100vh}
         <a href="{{ route('categorias.index') }}" class="nav-link {{ request()->routeIs('categorias.*') ? 'active' : '' }}"><i class="bi bi-tags"></i>Categorías</a>
         @endcan
         @endcanany
+        @endmodulo
 
-        @canany(['pedidos.ver', 'clientes.ver', 'proveedores.ver', 'compras.ver'])
+        @modulo('ventas')
+        @canany(['pedidos.ver', 'clientes.ver'])
         <span class="nav-section">Comercial</span>
         @can('pedidos.ver')
         <a href="{{ route('presupuestos.index') }}" class="nav-link {{ request()->routeIs('presupuestos.*') ? 'active' : '' }}"><i class="bi bi-file-earmark-text"></i>Presupuestos</a>
@@ -56,6 +64,12 @@ body{background:#f1f5f9;min-height:100vh}
         @can('clientes.ver')
         <a href="{{ route('clientes.index') }}" class="nav-link {{ request()->routeIs('clientes.*') ? 'active' : '' }}"><i class="bi bi-people"></i>Clientes</a>
         @endcan
+        @endcanany
+        @endmodulo
+
+        @modulo('compras')
+        @canany(['proveedores.ver', 'compras.ver', 'productos.editar'])
+        <span class="nav-section">Compras</span>
         @can('proveedores.ver')
         <a href="{{ route('proveedores.index') }}" class="nav-link {{ request()->routeIs('proveedores.*') ? 'active' : '' }}"><i class="bi bi-building"></i>Proveedores</a>
         @endcan
@@ -66,7 +80,9 @@ body{background:#f1f5f9;min-height:100vh}
         <a href="{{ route('traslados.index') }}" class="nav-link {{ request()->routeIs('traslados.*') ? 'active' : '' }}"><i class="bi bi-arrow-left-right"></i>Traslados de Stock</a>
         @endcan
         @endcanany
+        @endmodulo
 
+        @modulo('ventas')
         @canany(['facturas.ver', 'envios.ver', 'pagos.ver'])
         <span class="nav-section">Documentos</span>
         @can('facturas.ver')
@@ -75,24 +91,39 @@ body{background:#f1f5f9;min-height:100vh}
         @endcan
         @can('pagos.ver')
         <a href="{{ route('pagos.index') }}" class="nav-link {{ request()->routeIs('pagos.*') ? 'active' : '' }}"><i class="bi bi-cash-coin"></i>Pagos</a>
+        <a href="{{ route('cobranzas.index') }}" class="nav-link {{ request()->routeIs('cobranzas.*') ? 'active' : '' }}"><i class="bi bi-hourglass-split"></i>Cobranzas</a>
         @endcan
         @can('envios.ver')
         <a href="{{ route('notas-remision.index') }}" class="nav-link {{ request()->routeIs('notas-remision.*') ? 'active' : '' }}"><i class="bi bi-truck"></i>Notas de Remisión</a>
         <a href="{{ route('envios.index') }}" class="nav-link {{ request()->routeIs('envios.*') ? 'active' : '' }}"><i class="bi bi-box-seam"></i>Envíos</a>
         @endcan
         @endcanany
+        @endmodulo
 
+        @modulo('reportes')
         @can('reportes.ver')
         <span class="nav-section">Reportes</span>
         <a href="{{ route('reportes.stock') }}" class="nav-link {{ request()->routeIs('reportes.stock') ? 'active' : '' }}"><i class="bi bi-bar-chart-line"></i>Stock</a>
         <a href="{{ route('reportes.ventas') }}" class="nav-link {{ request()->routeIs('reportes.ventas') ? 'active' : '' }}"><i class="bi bi-graph-up-arrow"></i>Ventas</a>
         @endcan
+        @endmodulo
+
+        @modulo('contabilidad')
+        @can('contabilidad.ver')
+        <span class="nav-section">Contabilidad</span>
+        <a href="{{ route('contabilidad.asientos.index') }}" class="nav-link {{ request()->routeIs('contabilidad.asientos.*') ? 'active' : '' }}"><i class="bi bi-journal-text"></i>Libro Diario</a>
+        <a href="{{ route('contabilidad.cuentas.index') }}" class="nav-link {{ request()->routeIs('contabilidad.cuentas.*') ? 'active' : '' }}"><i class="bi bi-diagram-3"></i>Plan de Cuentas</a>
+        <a href="{{ route('contabilidad.reportes.balance-general') }}" class="nav-link {{ request()->routeIs('contabilidad.reportes.*') ? 'active' : '' }}"><i class="bi bi-bar-chart-steps"></i>Reportes Contables</a>
+        @endcan
+        @endmodulo
 
         @role('admin')
         <span class="nav-section">Administración</span>
         <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"><i class="bi bi-people"></i>Usuarios</a>
         <a href="{{ route('grupos.index') }}" class="nav-link {{ request()->routeIs('grupos.*') ? 'active' : '' }}"><i class="bi bi-shield-gear"></i>Grupos de Acceso</a>
+        @modulo('auditoria')
         <a href="{{ route('auditoria.index') }}" class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}"><i class="bi bi-clock-history"></i>Auditoría</a>
+        @endmodulo
         @endrole
         @if(Auth::user()?->esSuperAdmin())
         <span class="nav-section">Sistema</span>
@@ -187,5 +218,42 @@ body{background:#f1f5f9;min-height:100vh}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 @stack('scripts')
+<script>
+(function () {
+    var nav = document.querySelector('#sidebar nav');
+    if (!nav) return;
+    Array.prototype.slice.call(nav.querySelectorAll('.nav-section')).forEach(function (sectionEl) {
+        var label = sectionEl.textContent.trim();
+
+        var group = document.createElement('div');
+        group.className = 'nav-group';
+        var el = sectionEl.nextElementSibling;
+        while (el && !el.classList.contains('nav-section')) {
+            var next = el.nextElementSibling;
+            group.appendChild(el);
+            el = next;
+        }
+        sectionEl.insertAdjacentElement('afterend', group);
+        sectionEl.insertAdjacentHTML('beforeend', '<i class="bi bi-chevron-down toggle-icon"></i>');
+
+        var key = 'sidebarSeccion_' + label.replace(/\s+/g, '_');
+        var activeInside = group.querySelector('.nav-link.active') !== null;
+        var stored = localStorage.getItem(key);
+        var defaultCollapsed = label !== 'Principal';
+        var collapsed = stored !== null ? stored === '1' : defaultCollapsed;
+
+        if (collapsed && !activeInside) {
+            group.classList.add('collapsed');
+            sectionEl.classList.add('collapsed');
+        }
+
+        sectionEl.addEventListener('click', function () {
+            var nowCollapsed = group.classList.toggle('collapsed');
+            sectionEl.classList.toggle('collapsed', nowCollapsed);
+            localStorage.setItem(key, nowCollapsed ? '1' : '0');
+        });
+    });
+})();
+</script>
 </body>
 </html>

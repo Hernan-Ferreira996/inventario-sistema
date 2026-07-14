@@ -6,13 +6,53 @@ use App\Models\PedidoVenta;
 use App\Models\DetallePedidoVenta;
 use App\Models\Cliente;
 use App\Models\Producto;
+use App\Models\MovimientoStock;
 use App\Models\Ubicacion;
 use App\Models\TerminoPago;
+use App\Support\Numeracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class PedidoVentaController extends Controller
 {
+    /**
+     * Adjunta a cada producto su stock disponible (físico total menos lo
+     * comprometido en otros pedidos activos aún no despachados), calculado
+     * en bloque para evitar N+1, para que el formulario de pedido pueda
+     * advertir si se está vendiendo por encima de lo disponible.
+     *
+     * $excluirPedidoId excluye del cálculo de comprometido las líneas del
+     * propio pedido que se está editando: ya están reservadas por él, no
+     * deben restarse de su propia disponibilidad.
+     */
+    private function conStockDisponible($productos, ?int $excluirPedidoId = null)
+    {
+        $ids = $productos->pluck('id');
+
+        $totales = MovimientoStock::whereIn('producto_id', $ids)
+            ->selectRaw('producto_id, SUM(cantidad) as total')
+            ->groupBy('producto_id')
+            ->pluck('total', 'producto_id');
+
+        $comprometidos = DetallePedidoVenta::whereIn('producto_id', $ids)
+            ->whereColumn('cantidad', '>', 'cantidad_enviada')
+            ->whereHas('pedido', function ($q) use ($excluirPedidoId) {
+                $q->where('estado', 'activo');
+                if ($excluirPedidoId) {
+                    $q->where('id', '!=', $excluirPedidoId);
+                }
+            })
+            ->selectRaw('producto_id, SUM(cantidad - cantidad_enviada) as total')
+            ->groupBy('producto_id')
+            ->pluck('total', 'producto_id');
+
+        $productos->each(function ($p) use ($totales, $comprometidos) {
+            $p->stock_disponible = (float) ($totales[$p->id] ?? 0) - (float) ($comprometidos[$p->id] ?? 0);
+        });
+
+        return $productos;
+    }
+
     public function index(Request $request)
     {
         $query = PedidoVenta::with(['cliente', 'usuario']);
@@ -45,13 +85,11 @@ class PedidoVentaController extends Controller
     public function create()
     {
         $clientes     = Cliente::where('activo', true)->orderBy('nombre')->get();
-        $productos    = Producto::activos()->orderBy('nombre')->get();
-        $ubicaciones  = Ubicacion::where('activo', true)->orderBy('nombre')->get();
+        $productos    = $this->conStockDisponible(Producto::activos()->orderBy('nombre')->get());
+        $ubicaciones  = Ubicacion::where('activo', true)->visiblesPara(auth()->user())->orderBy('nombre')->get();
         $terminosPago = TerminoPago::orderBy('nombre')->get();
 
-        $proximoNumero = 'PV-' . str_pad(
-            (PedidoVenta::count() + 1), 6, '0', STR_PAD_LEFT
-        );
+        $proximoNumero = Numeracion::previsualizar('pedidos_venta', null, 'PV-');
 
         return view('pedidos.crear', compact('clientes', 'productos', 'ubicaciones', 'terminosPago', 'proximoNumero'));
     }
@@ -80,7 +118,7 @@ class PedidoVentaController extends Controller
             'usuario_id'         => auth()->id(),
             'ubicacion_id'       => $request->ubicacion_id,
             'termino_pago_id'    => $request->termino_pago_id,
-            'numero_referencia'  => 'PV-' . str_pad((PedidoVenta::count() + 1), 6, '0', STR_PAD_LEFT),
+            'numero_referencia'  => Numeracion::siguiente('pedidos_venta', null, 'PV-'),
             'referencia_cliente' => $request->referencia_cliente,
             'comentarios'        => $request->comentarios,
             'fecha_pedido'       => $request->fecha_pedido,
@@ -120,8 +158,8 @@ class PedidoVentaController extends Controller
     {
         $pedido->load(['detalles.producto']);
         $clientes     = Cliente::where('activo', true)->orderBy('nombre')->get();
-        $productos    = Producto::activos()->orderBy('nombre')->get();
-        $ubicaciones  = Ubicacion::where('activo', true)->orderBy('nombre')->get();
+        $productos    = $this->conStockDisponible(Producto::activos()->orderBy('nombre')->get(), $pedido->id);
+        $ubicaciones  = Ubicacion::where('activo', true)->visiblesPara(auth()->user())->orderBy('nombre')->get();
         $terminosPago = TerminoPago::orderBy('nombre')->get();
 
         return view('pedidos.editar', compact('pedido', 'clientes', 'productos', 'ubicaciones', 'terminosPago'));
