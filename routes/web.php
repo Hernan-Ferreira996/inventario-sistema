@@ -187,6 +187,15 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
             ->name('reportes.balance-general')->middleware('permission:contabilidad.ver');
     });
 
+    Route::resource('centros-costo', \App\Http\Controllers\CentroCostoController::class)
+        ->except(['show'])
+        ->parameters(['centros-costo' => 'centroCosto'])
+        ->middleware('modulo:contabilidad')
+        ->middlewareFor(['index'], 'permission:centros_costo.ver')
+        ->middlewareFor(['create', 'store'], 'permission:centros_costo.crear')
+        ->middlewareFor(['edit', 'update'], 'permission:centros_costo.editar')
+        ->middlewareFor('destroy', 'permission:centros_costo.eliminar');
+
     Route::delete('documentos/{documentoAdjunto}', [\App\Http\Controllers\DocumentoAdjuntoController::class, 'destroy'])
         ->name('documentos.destroy');
 

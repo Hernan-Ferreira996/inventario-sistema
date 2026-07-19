@@ -53,6 +53,11 @@ table { width: 100%; border-collapse: collapse; }
         &nbsp;&nbsp;<strong>Email:</strong> {{ $pedidoCompra->proveedor->email ?? '' }}</td>
 </tr>
 @endif
+@if($pedidoCompra->centroCosto)
+<tr class="datos-proveedor">
+    <td colspan="3"><strong>Centro de Costo:</strong> {{ $pedidoCompra->centroCosto->codigo }} — {{ $pedidoCompra->centroCosto->nombre }}</td>
+</tr>
+@endif
 </table>
 
 <table class="tabla-items" style="margin-top:6px">

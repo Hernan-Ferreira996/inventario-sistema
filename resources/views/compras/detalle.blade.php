@@ -11,6 +11,9 @@
             <div class="list-group-item"><small class="text-muted d-block">Tipo</small>
                 <x-badge-estado grupo="pedidos_compra.tipo" :valor="$pedidoCompra->tipo" />
             </div>
+            @if($pedidoCompra->centroCosto)
+            <div class="list-group-item"><small class="text-muted d-block">Centro de Costo</small>{{ $pedidoCompra->centroCosto->codigo }} — {{ $pedidoCompra->centroCosto->nombre }}</div>
+            @endif
             <div class="list-group-item"><small class="text-muted d-block">Fecha Pedido</small>{{ $pedidoCompra->fecha_pedido->format('d/m/Y') }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Fecha Esperada</small>{{ $pedidoCompra->fecha_esperada?->format('d/m/Y') ?? 'Sin fecha' }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Estado</small>

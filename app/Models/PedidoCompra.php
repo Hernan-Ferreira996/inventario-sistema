@@ -29,7 +29,7 @@ class PedidoCompra extends Model
     }
 
     protected $fillable = [
-        'proveedor_id', 'usuario_id', 'ubicacion_id', 'tipo',
+        'proveedor_id', 'usuario_id', 'ubicacion_id', 'tipo', 'centro_costo_id',
         'numero_referencia', 'comentarios', 'fecha_pedido',
         'fecha_esperada', 'total', 'impuesto_incluido', 'estado',
     ];
@@ -54,6 +54,11 @@ class PedidoCompra extends Model
     public function ubicacion(): BelongsTo
     {
         return $this->belongsTo(Ubicacion::class);
+    }
+
+    public function centroCosto(): BelongsTo
+    {
+        return $this->belongsTo(CentroCosto::class);
     }
 
     public function detalles(): HasMany

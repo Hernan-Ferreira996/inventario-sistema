@@ -15,7 +15,7 @@ class RolesPermisosSeeder extends Seeder
         $modulos = [
             'productos', 'categorias', 'clientes', 'proveedores',
             'presupuestos', 'pedidos', 'compras', 'facturas', 'pagos', 'envios',
-            'reportes', 'usuarios', 'configuracion', 'contabilidad',
+            'reportes', 'usuarios', 'configuracion', 'contabilidad', 'centros_costo',
         ];
         $acciones = ['ver', 'crear', 'editar', 'eliminar'];
 
@@ -57,6 +57,7 @@ class RolesPermisosSeeder extends Seeder
             'pedidos.ver', // necesario para ubicar el pedido al despachar (Notas de Remisión/Envíos)
             'envios.ver', 'envios.crear', 'envios.editar',
             'reportes.ver', 'reportes.compras',
+            'centros_costo.ver', // necesario para imputar centro de costo al crear una compra
         ]);
 
         // ===== CONTADOR: solo lectura + pagos/facturas + reportes, sin crear/editar operativo =====
@@ -70,6 +71,7 @@ class RolesPermisosSeeder extends Seeder
             'reportes.ver', 'reportes.compras', 'reportes.exportar',
             'configuracion.ver',
             'contabilidad.ver', 'contabilidad.crear', 'contabilidad.editar',
+            'centros_costo.ver', 'centros_costo.crear', 'centros_costo.editar',
         ]);
 
         // Asignar rol admin al usuario admin existente

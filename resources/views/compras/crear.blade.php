@@ -38,6 +38,15 @@
                     </select>
                 </div>
                 <div class="col-md-4">
+                    <label class="form-label fw-semibold">Centro de Costo</label>
+                    <select name="centro_costo_id" class="form-select">
+                        <option value="">-- Sin centro de costo --</option>
+                        @foreach($centrosCosto as $cc)
+                        <option value="{{ $cc->id }}" {{ old('centro_costo_id') == $cc->id ? 'selected' : '' }}>{{ $cc->codigo }} — {{ $cc->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">Fecha Pedido *</label>
                     <input type="date" name="fecha_pedido" class="form-control" value="{{ old('fecha_pedido', date('Y-m-d')) }}" required>
                 </div>

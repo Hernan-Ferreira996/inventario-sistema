@@ -6,6 +6,7 @@ use App\Models\MovimientoStock;
 use App\Models\Proveedor;
 use App\Models\Producto;
 use App\Models\Ubicacion;
+use App\Models\CentroCosto;
 use App\Events\CompraRecibida;
 use App\Support\Configuracion;
 use App\Support\Numeracion;
@@ -40,8 +41,9 @@ class PedidoCompraController extends Controller
         $proveedores   = Proveedor::where("activo", true)->orderBy("nombre")->get();
         $productos     = Producto::where("activo", true)->orderBy("nombre")->get();
         $ubicaciones   = Ubicacion::where("activo", true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
+        $centrosCosto  = CentroCosto::where("activo", true)->orderBy("codigo")->get();
         $proximoNumero = Numeracion::previsualizar('pedidos_compra', null, 'PC-');
-        return view("compras.crear", compact("proveedores","productos","ubicaciones","proximoNumero"));
+        return view("compras.crear", compact("proveedores","productos","ubicaciones","centrosCosto","proximoNumero"));
     }
 
     public function store(Request $request)
@@ -49,6 +51,7 @@ class PedidoCompraController extends Controller
         $request->validate([
             "proveedor_id"               => "required|exists:proveedores,id",
             "tipo"                       => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.tipo')),
+            "centro_costo_id"            => "nullable|exists:centros_costo,id",
             "fecha_pedido"               => "required|date",
             "productos"                  => "required|array|min:1",
             "productos.*.producto_id"    => "required|exists:productos,id",
@@ -66,6 +69,7 @@ class PedidoCompraController extends Controller
                 "usuario_id"        => Auth::id(),
                 "ubicacion_id"      => $request->ubicacion_id ?: null,
                 "tipo"              => $request->tipo,
+                "centro_costo_id"   => $request->centro_costo_id ?: null,
                 "numero_referencia" => Numeracion::siguiente('pedidos_compra', null, 'PC-'),
                 "comentarios"       => $request->comentarios,
                 "fecha_pedido"      => $request->fecha_pedido,
@@ -89,14 +93,14 @@ class PedidoCompraController extends Controller
 
     public function show(PedidoCompra $pedidoCompra)
     {
-        $pedidoCompra->load(["proveedor","usuario","ubicacion","detalles.producto","recepciones.detalles.producto"]);
+        $pedidoCompra->load(["proveedor","usuario","ubicacion","centroCosto","detalles.producto","recepciones.detalles.producto"]);
         $ubicaciones = Ubicacion::where("activo", true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
         return view("compras.detalle", compact("pedidoCompra","ubicaciones"));
     }
 
     public function pdf(PedidoCompra $pedidoCompra)
     {
-        $pedidoCompra->load(["proveedor", "detalles.producto"]);
+        $pedidoCompra->load(["proveedor", "centroCosto", "detalles.producto"]);
         $config = Configuracion::obtener();
 
         $pdf = Pdf::loadView("compras.pdf", compact("pedidoCompra", "config"))->setPaper("a4");
@@ -109,28 +113,31 @@ class PedidoCompraController extends Controller
         if ($pedidoCompra->estado === "completado") {
             return redirect()->route("compras.show",$pedidoCompra)->with("error","No se puede editar un pedido completado.");
         }
-        $proveedores = Proveedor::where("activo",true)->orderBy("nombre")->get();
-        $ubicaciones = Ubicacion::where("activo",true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
+        $proveedores  = Proveedor::where("activo",true)->orderBy("nombre")->get();
+        $ubicaciones  = Ubicacion::where("activo",true)->visiblesPara(Auth::user())->orderBy("nombre")->get();
+        $centrosCosto = CentroCosto::where("activo", true)->orderBy("codigo")->get();
         $pedidoCompra->load("detalles.producto");
-        return view("compras.editar", compact("pedidoCompra","proveedores","ubicaciones"));
+        return view("compras.editar", compact("pedidoCompra","proveedores","ubicaciones","centrosCosto"));
     }
 
     public function update(Request $request, PedidoCompra $pedidoCompra)
     {
         $request->validate([
-            "proveedor_id" => "required|exists:proveedores,id",
-            "tipo"         => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.tipo')),
-            "fecha_pedido" => "required|date",
-            "estado"       => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.estado')),
+            "proveedor_id"    => "required|exists:proveedores,id",
+            "tipo"            => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.tipo')),
+            "centro_costo_id" => "nullable|exists:centros_costo,id",
+            "fecha_pedido"    => "required|date",
+            "estado"          => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.estado')),
         ]);
         $pedidoCompra->update([
-            "proveedor_id"   => $request->proveedor_id,
-            "ubicacion_id"   => $request->ubicacion_id ?: null,
-            "tipo"           => $request->tipo,
-            "fecha_pedido"   => $request->fecha_pedido,
-            "fecha_esperada" => $request->fecha_esperada ?: null,
-            "comentarios"    => $request->comentarios,
-            "estado"         => $request->estado,
+            "proveedor_id"    => $request->proveedor_id,
+            "ubicacion_id"    => $request->ubicacion_id ?: null,
+            "tipo"            => $request->tipo,
+            "centro_costo_id" => $request->centro_costo_id ?: null,
+            "fecha_pedido"    => $request->fecha_pedido,
+            "fecha_esperada"  => $request->fecha_esperada ?: null,
+            "comentarios"     => $request->comentarios,
+            "estado"          => $request->estado,
         ]);
         return redirect()->route("compras.show",$pedidoCompra)->with("success","Pedido actualizado.");
     }

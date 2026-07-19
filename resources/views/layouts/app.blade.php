@@ -109,12 +109,17 @@ body{background:#f1f5f9;min-height:100vh}
         @endmodulo
 
         @modulo('contabilidad')
-        @can('contabilidad.ver')
+        @canany(['contabilidad.ver', 'centros_costo.ver'])
         <span class="nav-section">Contabilidad</span>
+        @can('contabilidad.ver')
         <a href="{{ route('contabilidad.asientos.index') }}" class="nav-link {{ request()->routeIs('contabilidad.asientos.*') ? 'active' : '' }}"><i class="bi bi-journal-text"></i>Libro Diario</a>
         <a href="{{ route('contabilidad.cuentas.index') }}" class="nav-link {{ request()->routeIs('contabilidad.cuentas.*') ? 'active' : '' }}"><i class="bi bi-diagram-3"></i>Plan de Cuentas</a>
         <a href="{{ route('contabilidad.reportes.balance-general') }}" class="nav-link {{ request()->routeIs('contabilidad.reportes.*') ? 'active' : '' }}"><i class="bi bi-bar-chart-steps"></i>Reportes Contables</a>
         @endcan
+        @can('centros_costo.ver')
+        <a href="{{ route('centros-costo.index') }}" class="nav-link {{ request()->routeIs('centros-costo.*') ? 'active' : '' }}"><i class="bi bi-diagram-2"></i>Centros de Costo</a>
+        @endcan
+        @endcanany
         @endmodulo
 
         @role('admin')
