@@ -8,6 +8,29 @@ use Illuminate\Support\Facades\Auth;
 
 class CatalogoValor extends Model
 {
+    /**
+     * Mapea el prefijo de "grupo" (antes del primer punto) al módulo del sistema
+     * al que pertenece, para mostrarlo en la pantalla de administración de catálogos.
+     */
+    private const MODULOS = [
+        'pedidos_venta'     => 'Comercial',
+        'presupuestos'      => 'Comercial',
+        'clientes'          => 'Comercial',
+        'pedidos_compra'    => 'Compras',
+        'facturas'          => 'Documentos',
+        'notas_credito'     => 'Documentos',
+        'notas_remision'    => 'Documentos',
+        'envios'            => 'Documentos',
+        'interacciones'     => 'CRM',
+        'cuentas_contables' => 'Contabilidad',
+    ];
+
+    public static function modulo(string $grupo): string
+    {
+        $prefijo = explode('.', $grupo)[0];
+        return self::MODULOS[$prefijo] ?? ucfirst(str_replace('_', ' ', $prefijo));
+    }
+
     protected $table = 'catalogo_valores';
 
     protected $fillable = [

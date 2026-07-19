@@ -10,7 +10,7 @@ class ConfiguracionController extends Controller
 {
     private const GRUPOS_CATALOGO = [
         'pedidos_venta.estado', 'pedidos_venta.estado_factura', 'facturas.estado',
-        'envios.estado', 'pedidos_compra.estado', 'notas_credito.motivo',
+        'envios.estado', 'pedidos_compra.estado', 'pedidos_compra.tipo', 'notas_credito.motivo',
         'notas_remision.motivo', 'presupuestos.estado', 'clientes.tipo_precio',
     ];
     private string $archivo = "configuracion.json";
@@ -72,7 +72,7 @@ class ConfiguracionController extends Controller
 
         return view("configuracion.index", compact(
             "config", "valoresCatalogo", "secuencias", "camposPersonalizados"
-        ) + ['gruposCatalogo' => self::GRUPOS_CATALOGO]);
+        ) + ['gruposCatalogo' => collect(self::GRUPOS_CATALOGO)]);
     }
 
     public function storeCatalogo(Request $request)

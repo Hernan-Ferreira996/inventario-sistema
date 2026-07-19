@@ -174,7 +174,10 @@
 <p class="text-muted small">Los estados y motivos usados en pedidos, facturas, envíos, etc. se pueden ampliar acá sin tocar código. Los valores marcados como "Sistema" vienen por defecto y no se pueden eliminar, pero sí desactivar.</p>
 @foreach($valoresCatalogo as $grupo => $valores)
 <div class="card mb-3">
-<div class="card-header fw-semibold">{{ $grupo }}</div>
+<div class="card-header fw-semibold">
+    {{ $grupo }}
+    <span class="badge bg-secondary fw-normal ms-2">{{ \App\Models\CatalogoValor::modulo($grupo) }}</span>
+</div>
 <div class="table-responsive">
 <table class="table table-sm mb-0 align-middle">
 <thead><tr><th>Código</th><th>Etiqueta</th><th>Vista previa</th><th>Origen</th><th>Estado</th><th></th></tr></thead>
@@ -213,8 +216,12 @@
     <div class="col-md-3">
         <label class="form-label fw-semibold">Grupo *</label>
         <select name="grupo" class="form-select" required>
-            @foreach($gruposCatalogo as $g)
-            <option value="{{ $g }}">{{ $g }}</option>
+            @foreach($gruposCatalogo->groupBy(fn($g) => \App\Models\CatalogoValor::modulo($g)) as $modulo => $grupos)
+            <optgroup label="{{ $modulo }}">
+                @foreach($grupos as $g)
+                <option value="{{ $g }}">{{ $g }}</option>
+                @endforeach
+            </optgroup>
             @endforeach
         </select>
     </div>
