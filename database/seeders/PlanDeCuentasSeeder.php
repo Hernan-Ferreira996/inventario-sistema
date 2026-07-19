@@ -29,6 +29,7 @@ class PlanDeCuentasSeeder extends Seeder
             ['2.1',    'Pasivo Corriente',        'pasivo',     'acreedora', false, '2'],
             ['2.1.01', 'Cuentas por Pagar Proveedores', 'pasivo', 'acreedora', true, '2.1'],
             ['2.1.02', 'IVA Débito Fiscal',       'pasivo',     'acreedora', true,  '2.1'],
+            ['2.1.03', 'Retenciones IVA a Pagar', 'pasivo',     'acreedora', true,  '2.1'],
 
             ['3',      'PATRIMONIO',              'patrimonio', 'acreedora', false, null],
             ['3.1',    'Capital Social',          'patrimonio', 'acreedora', true,  '3'],

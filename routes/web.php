@@ -160,6 +160,15 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         ->only(['index', 'create', 'store', 'show'])
         ->middlewareFor(['index', 'show'], 'permission:compras.ver')
         ->middlewareFor(['create', 'store'], ['permission:productos.editar', 'no-superadmin']);
+
+    Route::resource('facturas-proveedor', \App\Http\Controllers\FacturaProveedorController::class)
+        ->parameters(['facturas-proveedor' => 'facturaProveedor'])
+        ->middlewareFor(['index', 'show'], 'permission:facturas_proveedor.ver')
+        ->middlewareFor(['create', 'store'], ['permission:facturas_proveedor.crear', 'no-superadmin'])
+        ->middlewareFor(['edit', 'update'], 'permission:facturas_proveedor.editar')
+        ->middlewareFor('destroy', 'permission:facturas_proveedor.eliminar');
+    Route::post('facturas-proveedor/cuotas/{cuota}/pagar', [\App\Http\Controllers\FacturaProveedorController::class, 'marcarCuotaPagada'])
+        ->name('facturas-proveedor.cuotas.pagar')->middleware(['permission:facturas_proveedor.editar', 'no-superadmin']);
     });
 
     // ===== CRM: contactos / interacciones / adjuntos (comunes a clientes y proveedores) =====

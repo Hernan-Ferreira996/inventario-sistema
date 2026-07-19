@@ -26,6 +26,13 @@ class CatalogoValoresSeeder extends Seeder
                 ['pagada', 'Pagada', '#34d399', '#000000'],
                 ['anulada', 'Anulada', '#f87171', '#ffffff'],
             ],
+            'facturas_proveedor.estado' => [
+                ['pendiente', 'Pendiente', '#fbbf24', '#000000'],
+                ['parcial', 'Parcial', '#fb923c', '#ffffff'],
+                ['pagada', 'Pagada', '#34d399', '#000000'],
+                ['vencida', 'Vencida', '#f87171', '#ffffff'],
+                ['anulada', 'Anulada', '#94a3b8', '#ffffff'],
+            ],
             'envios.estado' => [
                 ['preparando', 'Preparando', '#fbbf24', '#000000'],
                 ['enviado', 'Enviado', '#2dd4bf', '#000000'],

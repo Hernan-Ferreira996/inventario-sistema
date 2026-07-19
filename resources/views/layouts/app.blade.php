@@ -68,13 +68,16 @@ body{background:#f1f5f9;min-height:100vh}
         @endmodulo
 
         @modulo('compras')
-        @canany(['proveedores.ver', 'compras.ver', 'productos.editar'])
+        @canany(['proveedores.ver', 'compras.ver', 'productos.editar', 'facturas_proveedor.ver'])
         <span class="nav-section">Compras</span>
         @can('proveedores.ver')
         <a href="{{ route('proveedores.index') }}" class="nav-link {{ request()->routeIs('proveedores.*') ? 'active' : '' }}"><i class="bi bi-building"></i>Proveedores</a>
         @endcan
         @can('compras.ver')
         <a href="{{ route('compras.index') }}" class="nav-link {{ request()->routeIs('compras.*') ? 'active' : '' }}"><i class="bi bi-bag-check"></i>Compras</a>
+        @endcan
+        @can('facturas_proveedor.ver')
+        <a href="{{ route('facturas-proveedor.index') }}" class="nav-link {{ request()->routeIs('facturas-proveedor.*') ? 'active' : '' }}"><i class="bi bi-file-earmark-text"></i>Facturas de Proveedor</a>
         @endcan
         @can('productos.editar')
         <a href="{{ route('traslados.index') }}" class="nav-link {{ request()->routeIs('traslados.*') ? 'active' : '' }}"><i class="bi bi-arrow-left-right"></i>Traslados de Stock</a>
