@@ -53,6 +53,12 @@
                     <label class="form-label fw-semibold">Observaciones</label>
                     <textarea name="observaciones" class="form-control" rows="2"></textarea>
                 </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input type="checkbox" name="afecta_stock" value="1" class="form-check-input" id="afecta_stock" checked>
+                        <label class="form-check-label" for="afecta_stock">Esta remisión afecta el stock (descuenta del almacén de origen)</label>
+                    </div>
+                </div>
             </div>
 
             <h6 class="fw-bold mb-2 border-bottom pb-2">Productos a Remitir</h6>

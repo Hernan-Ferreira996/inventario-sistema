@@ -19,9 +19,9 @@ class NotaRemision extends Model
     protected $fillable = [
         "pedido_id", "envio_id", "usuario_id", "ubicacion_origen_id",
         "numero_documento", "timbrado", "establecimiento", "punto_expedicion", "cdc", "modo",
-        "fecha_emision", "motivo", "direccion_destino", "transportista", "vehiculo_placa", "observaciones",
+        "fecha_emision", "motivo", "afecta_stock", "direccion_destino", "transportista", "vehiculo_placa", "observaciones",
     ];
-    protected $casts = ["fecha_emision" => "date"];
+    protected $casts = ["fecha_emision" => "date", "afecta_stock" => "boolean"];
 
     public function getActivitylogOptions(): LogOptions
     {

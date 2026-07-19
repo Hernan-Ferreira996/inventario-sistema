@@ -16,6 +16,13 @@
             <div class="list-group-item"><small class="text-muted d-block">Cliente</small>{{ $notaRemision->pedido->cliente->nombre ?? '—' }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Fecha</small>{{ $notaRemision->fecha_emision->format('d/m/Y') }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Motivo</small>{{ ucfirst($notaRemision->motivo) }}</div>
+            <div class="list-group-item"><small class="text-muted d-block">Afecta stock</small>
+                @if($notaRemision->afecta_stock)
+                <span class="badge bg-success">Sí</span>
+                @else
+                <span class="badge bg-secondary">No</span>
+                @endif
+            </div>
             <div class="list-group-item"><small class="text-muted d-block">Destino</small>{{ $notaRemision->direccion_destino ?: '—' }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Transportista</small>{{ $notaRemision->transportista ?: '—' }} {{ $notaRemision->vehiculo_placa ? '('.$notaRemision->vehiculo_placa.')' : '' }}</div>
         </div>

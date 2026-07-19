@@ -36,6 +36,7 @@ class NotaRemisionController extends Controller
             'pedido_id'           => 'required|exists:pedidos_venta,id',
             'ubicacion_origen_id' => 'required|exists:ubicaciones,id',
             'motivo'              => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('notas_remision.motivo')),
+            'afecta_stock'        => 'boolean',
             'direccion_destino'   => 'nullable|string|max:255',
             'transportista'       => 'nullable|string|max:150',
             'vehiculo_placa'      => 'nullable|string|max:20',
@@ -49,7 +50,8 @@ class NotaRemisionController extends Controller
         $config = Configuracion::obtener();
 
         $pedidoParaSucursal = PedidoVenta::findOrFail($request->pedido_id);
-        $nota = DB::transaction(function () use ($request, $config, $pedidoParaSucursal) {
+        $afectaStock = $request->boolean('afecta_stock');
+        $nota = DB::transaction(function () use ($request, $config, $pedidoParaSucursal, $afectaStock) {
             $nota = NotaRemision::create([
                 'pedido_id'           => $request->pedido_id,
                 'usuario_id'          => Auth::id(),
@@ -61,6 +63,7 @@ class NotaRemisionController extends Controller
                 'modo'                => $config['fact_modo'],
                 'fecha_emision'       => now()->toDateString(),
                 'motivo'              => $request->motivo,
+                'afecta_stock'        => $afectaStock,
                 'direccion_destino'   => $request->direccion_destino,
                 'transportista'       => $request->transportista,
                 'vehiculo_placa'      => $request->vehiculo_placa,
@@ -73,8 +76,13 @@ class NotaRemisionController extends Controller
                     'cantidad'    => $p['cantidad'],
                 ]);
 
+                if (!$afectaStock) {
+                    continue;
+                }
+
                 // La Nota de Remisión documenta la salida física de mercadería:
-                // se descuenta el stock del almacén de origen al momento de emitirla.
+                // se descuenta el stock del almacén de origen al momento de emitirla,
+                // salvo que el usuario marque que esta remisión no afecta stock.
                 MovimientoStock::create([
                     'producto_id'           => $p['producto_id'],
                     'ubicacion_id'          => $request->ubicacion_origen_id,
