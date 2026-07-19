@@ -19,6 +19,10 @@
     @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
 <div class="col-12"><label class="form-label fw-semibold">Dirección</label>
     <input type="text" name="direccion" class="form-control" value="{{ old('direccion') }}"></div>
+<div class="col-md-6"><label class="form-label fw-semibold">País</label>
+    <input type="text" name="pais" class="form-control" value="{{ old('pais', 'Paraguay') }}"></div>
+<div class="col-md-3"><div class="form-check mt-4"><input type="checkbox" name="expuesto_publicamente" value="1" class="form-check-input" {{ old('expuesto_publicamente') ? 'checked' : '' }}><label class="form-check-label">PEP</label></div></div>
+<div class="col-md-3"><div class="form-check mt-4"><input type="checkbox" name="funcionario" value="1" class="form-check-input" {{ old('funcionario') ? 'checked' : '' }}><label class="form-check-label">Funcionario público</label></div></div>
 <div class="col-12"><label class="form-label fw-semibold">Etiquetas</label><input type="text" name="etiquetas" class="form-control" placeholder="Confiable, Entrega rápida" value="{{ old('etiquetas') }}"><small class="text-muted">Separadas por coma</small></div>
 <x-campos-personalizados :campos="$campos" />
 </div>

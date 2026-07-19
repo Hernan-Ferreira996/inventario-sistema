@@ -11,6 +11,13 @@
         <div class="list-group-item"><small class="text-muted d-block">Email</small>{{ $proveedor->email ?? '—' }}</div>
         <div class="list-group-item"><small class="text-muted d-block">RUC / NIT</small><code>{{ $proveedor->ruc_nit ?? '—' }}</code></div>
         <div class="list-group-item"><small class="text-muted d-block">Dirección</small>{{ $proveedor->direccion ?? '—' }}</div>
+        <div class="list-group-item"><small class="text-muted d-block">País</small>{{ $proveedor->pais ?? '—' }}</div>
+        @if($proveedor->expuesto_publicamente || $proveedor->funcionario)
+        <div class="list-group-item">
+            @if($proveedor->expuesto_publicamente)<span class="badge bg-warning text-dark me-1">PEP</span>@endif
+            @if($proveedor->funcionario)<span class="badge bg-info text-dark">Funcionario público</span>@endif
+        </div>
+        @endif
         <div class="list-group-item"><small class="text-muted d-block">Estado</small>
             <span class="badge {{ $proveedor->activo ? 'bg-success' : 'bg-secondary' }}">{{ $proveedor->activo ? 'Activo' : 'Inactivo' }}</span>
         </div>

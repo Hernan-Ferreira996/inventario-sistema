@@ -17,10 +17,14 @@
     <input type="email" name="email" class="form-control" value="{{ old('email',$proveedor->email) }}"></div>
 <div class="col-12"><label class="form-label fw-semibold">Dirección</label>
     <input type="text" name="direccion" class="form-control" value="{{ old('direccion',$proveedor->direccion) }}"></div>
+<div class="col-md-6"><label class="form-label fw-semibold">País</label>
+    <input type="text" name="pais" class="form-control" value="{{ old('pais', $proveedor->pais) }}"></div>
 <div class="col-12"><div class="form-check">
     <input type="checkbox" name="activo" value="1" class="form-check-input" {{ $proveedor->activo ? 'checked' : '' }}>
     <label class="form-check-label">Proveedor activo</label>
 </div></div>
+<div class="col-md-6"><div class="form-check"><input type="checkbox" name="expuesto_publicamente" value="1" class="form-check-input" {{ old('expuesto_publicamente', $proveedor->expuesto_publicamente) ? 'checked' : '' }}><label class="form-check-label">Persona Expuesta Públicamente (PEP)</label></div></div>
+<div class="col-md-6"><div class="form-check"><input type="checkbox" name="funcionario" value="1" class="form-check-input" {{ old('funcionario', $proveedor->funcionario) ? 'checked' : '' }}><label class="form-check-label">Es funcionario público</label></div></div>
 <div class="col-12"><label class="form-label fw-semibold">Etiquetas</label><input type="text" name="etiquetas" class="form-control" placeholder="Confiable, Entrega rápida" value="{{ old('etiquetas', $etiquetasTexto) }}"><small class="text-muted">Separadas por coma</small></div>
 <x-campos-personalizados :campos="$campos" :valores="$valores" />
 </div>

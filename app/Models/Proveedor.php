@@ -44,9 +44,14 @@ class Proveedor extends Model
     protected $fillable = [
         'nombre', 'email', 'telefono', 'direccion',
         'ruc_nit', 'contacto', 'activo',
+        'expuesto_publicamente', 'funcionario', 'pais',
     ];
 
-    protected $casts = ['activo' => 'boolean'];
+    protected $casts = [
+        'activo' => 'boolean',
+        'expuesto_publicamente' => 'boolean',
+        'funcionario' => 'boolean',
+    ];
 
     public function pedidosCompra(): HasMany
     {

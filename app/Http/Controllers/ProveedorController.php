@@ -40,8 +40,13 @@ class ProveedorController extends Controller
             'direccion' => 'nullable|string|max:255',
             'ruc_nit'   => 'nullable|string|max:30',
             'contacto'  => 'nullable|string|max:100',
+            'pais'      => 'nullable|string|max:60',
+            'expuesto_publicamente' => 'boolean',
+            'funcionario'           => 'boolean',
         ]);
         $data['activo'] = true;
+        $data['expuesto_publicamente'] = $request->boolean('expuesto_publicamente');
+        $data['funcionario'] = $request->boolean('funcionario');
         $proveedor = Proveedor::create($data);
         $proveedor->guardarCamposPersonalizados($request->input('campos_personalizados', []));
         $proveedor->sincronizarEtiquetas($request->input('etiquetas'));
@@ -101,8 +106,13 @@ class ProveedorController extends Controller
             'direccion' => 'nullable|string|max:255',
             'ruc_nit'   => 'nullable|string|max:30',
             'contacto'  => 'nullable|string|max:100',
+            'pais'      => 'nullable|string|max:60',
+            'expuesto_publicamente' => 'boolean',
+            'funcionario'           => 'boolean',
         ]);
         $data['activo'] = $request->boolean('activo');
+        $data['expuesto_publicamente'] = $request->boolean('expuesto_publicamente');
+        $data['funcionario'] = $request->boolean('funcionario');
         $proveedor->update($data);
         $proveedor->guardarCamposPersonalizados($request->input('campos_personalizados', []));
         $proveedor->sincronizarEtiquetas($request->input('etiquetas'));

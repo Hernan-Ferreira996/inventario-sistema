@@ -21,6 +21,11 @@
 <p class="text-muted mb-1 small"><strong>{{ $campo->etiqueta }}:</strong> {{ $valoresCamposPersonalizados[$campo->nombre] ?? '—' }}</p>
 @endforeach
 @endif
+@if($cliente->expuesto_publicamente || $cliente->funcionario)
+<hr>
+@if($cliente->expuesto_publicamente)<span class="badge bg-warning text-dark me-1">PEP</span>@endif
+@if($cliente->funcionario)<span class="badge bg-info text-dark">Funcionario público</span>@endif
+@endif
 @if($cliente->limite_credito)
 <hr>
 @php $excedido = $resumen['saldo_pendiente'] > $cliente->limite_credito; @endphp

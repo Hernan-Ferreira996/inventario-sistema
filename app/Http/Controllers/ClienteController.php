@@ -46,7 +46,11 @@ class ClienteController extends Controller
             'ruc_nit'        => 'nullable|string|max:30',
             'tipo_precio'    => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('clientes.tipo_precio')),
             'limite_credito' => 'nullable|numeric|min:0',
+            'expuesto_publicamente' => 'boolean',
+            'funcionario'    => 'boolean',
         ]);
+        $validated['expuesto_publicamente'] = $request->boolean('expuesto_publicamente');
+        $validated['funcionario'] = $request->boolean('funcionario');
 
         $cliente = Cliente::create($validated);
         $cliente->guardarCamposPersonalizados($request->input('campos_personalizados', []));
@@ -121,7 +125,11 @@ class ClienteController extends Controller
             'tipo_precio'    => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('clientes.tipo_precio')),
             'activo'         => 'boolean',
             'limite_credito' => 'nullable|numeric|min:0',
+            'expuesto_publicamente' => 'boolean',
+            'funcionario'    => 'boolean',
         ]);
+        $validated['expuesto_publicamente'] = $request->boolean('expuesto_publicamente');
+        $validated['funcionario'] = $request->boolean('funcionario');
 
         $cliente->update($validated);
         $cliente->guardarCamposPersonalizados($request->input('campos_personalizados', []));
