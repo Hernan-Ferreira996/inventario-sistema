@@ -8,6 +8,11 @@ Esta factura se generará en <strong>modo demo/local</strong> — no es un docum
 Para emitir la factura oficial, segui usando e-Kuatia con estos mismos datos.
 </div>
 @endif
+@if($pedido->cliente?->exento_iva)
+<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>
+{{ $pedido->cliente->nombre }} está marcado como <strong>exento de IVA</strong>: esta factura se generará sin impuesto.
+</div>
+@endif
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">

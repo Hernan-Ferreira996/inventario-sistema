@@ -85,17 +85,23 @@ class FacturaController extends Controller
             'descuento_global' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        $pedido = PedidoVenta::with('detalles')->findOrFail($request->pedido_id);
+        $pedido = PedidoVenta::with(['detalles', 'cliente'])->findOrFail($request->pedido_id);
         $config = Configuracion::obtener();
 
         $subtotal = $pedido->detalles->sum('subtotal');
         $descuentoGlobal = (float) ($request->descuento_global ?? 0);
         $montoDescuento  = round($subtotal * $descuentoGlobal / 100);
         $subtotalConDesc = $subtotal - $montoDescuento;
-        $impuestoTotal   = $pedido->detalles->sum(fn($d) => $d->subtotal * ($d->impuesto / 100));
-        // El impuesto se calcula sobre el subtotal con descuento aplicado
-        if ($descuentoGlobal > 0) {
-            $impuestoTotal = $pedido->detalles->sum(fn($d) => ($d->subtotal * (1 - $descuentoGlobal / 100)) * ($d->impuesto / 100));
+
+        if ($pedido->cliente?->exento_iva) {
+            // Cliente exento de IVA: la factura sale sin impuesto sin importar el impuesto propio del producto.
+            $impuestoTotal = 0.0;
+        } else {
+            $impuestoTotal = $pedido->detalles->sum(fn($d) => $d->subtotal * ($d->impuesto / 100));
+            // El impuesto se calcula sobre el subtotal con descuento aplicado
+            if ($descuentoGlobal > 0) {
+                $impuestoTotal = $pedido->detalles->sum(fn($d) => ($d->subtotal * (1 - $descuentoGlobal / 100)) * ($d->impuesto / 100));
+            }
         }
 
         $factura = DB::transaction(function () use ($request, $pedido, $config, $subtotal, $subtotalConDesc, $impuestoTotal, $descuentoGlobal, $montoDescuento) {

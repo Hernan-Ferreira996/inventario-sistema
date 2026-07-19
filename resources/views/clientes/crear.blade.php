@@ -22,6 +22,7 @@
 <div class="col-md-6"><label class="form-label fw-semibold">Límite de Crédito</label><input type="number" step="0.01" min="0" name="limite_credito" class="form-control" value="{{ old('limite_credito') }}"></div>
 <div class="col-md-6"><div class="form-check mt-4"><input type="checkbox" name="expuesto_publicamente" value="1" class="form-check-input" {{ old('expuesto_publicamente') ? 'checked' : '' }}><label class="form-check-label">Persona Expuesta Públicamente (PEP)</label></div></div>
 <div class="col-md-6"><div class="form-check"><input type="checkbox" name="funcionario" value="1" class="form-check-input" {{ old('funcionario') ? 'checked' : '' }}><label class="form-check-label">Es funcionario público</label></div></div>
+<div class="col-md-6"><div class="form-check"><input type="checkbox" name="exento_iva" value="1" class="form-check-input" {{ old('exento_iva') ? 'checked' : '' }}><label class="form-check-label">Exento de IVA</label></div></div>
 <div class="col-12"><label class="form-label fw-semibold">Etiquetas</label><input type="text" name="etiquetas" class="form-control" placeholder="VIP, Mayorista frecuente" value="{{ old('etiquetas') }}"><small class="text-muted">Separadas por coma</small></div>
 <x-campos-personalizados :campos="$campos" />
 </div>

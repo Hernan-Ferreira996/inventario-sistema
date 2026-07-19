@@ -51,9 +51,11 @@ class ClienteController extends Controller
             'limite_credito' => 'nullable|numeric|min:0',
             'expuesto_publicamente' => 'boolean',
             'funcionario'    => 'boolean',
+            'exento_iva'     => 'boolean',
         ]);
         $validated['expuesto_publicamente'] = $request->boolean('expuesto_publicamente');
         $validated['funcionario'] = $request->boolean('funcionario');
+        $validated['exento_iva'] = $request->boolean('exento_iva');
 
         $cliente = Cliente::create($validated);
         $cliente->guardarCamposPersonalizados($request->input('campos_personalizados', []));
@@ -132,9 +134,11 @@ class ClienteController extends Controller
             'limite_credito' => 'nullable|numeric|min:0',
             'expuesto_publicamente' => 'boolean',
             'funcionario'    => 'boolean',
+            'exento_iva'     => 'boolean',
         ]);
         $validated['expuesto_publicamente'] = $request->boolean('expuesto_publicamente');
         $validated['funcionario'] = $request->boolean('funcionario');
+        $validated['exento_iva'] = $request->boolean('exento_iva');
 
         $cliente->update($validated);
         $cliente->guardarCamposPersonalizados($request->input('campos_personalizados', []));

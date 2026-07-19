@@ -22,10 +22,11 @@
 <p class="text-muted mb-1 small"><strong>{{ $campo->etiqueta }}:</strong> {{ $valoresCamposPersonalizados[$campo->nombre] ?? '—' }}</p>
 @endforeach
 @endif
-@if($cliente->expuesto_publicamente || $cliente->funcionario)
+@if($cliente->expuesto_publicamente || $cliente->funcionario || $cliente->exento_iva)
 <hr>
 @if($cliente->expuesto_publicamente)<span class="badge bg-warning text-dark me-1">PEP</span>@endif
-@if($cliente->funcionario)<span class="badge bg-info text-dark">Funcionario público</span>@endif
+@if($cliente->funcionario)<span class="badge bg-info text-dark me-1">Funcionario público</span>@endif
+@if($cliente->exento_iva)<span class="badge bg-secondary">Exento IVA</span>@endif
 @endif
 @if($cliente->limite_credito)
 <hr>

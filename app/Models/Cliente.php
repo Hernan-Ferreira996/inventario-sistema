@@ -44,7 +44,7 @@ class Cliente extends Model
     protected $fillable = [
         'nombre', 'email', 'telefono', 'direccion', 'ciudad_id',
         'ruc_nit', 'tipo_precio', 'activo', 'limite_credito',
-        'expuesto_publicamente', 'funcionario',
+        'expuesto_publicamente', 'funcionario', 'exento_iva',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -54,6 +54,7 @@ class Cliente extends Model
         'limite_credito' => 'decimal:2',
         'expuesto_publicamente' => 'boolean',
         'funcionario' => 'boolean',
+        'exento_iva' => 'boolean',
     ];
 
     public function pedidos(): HasMany
