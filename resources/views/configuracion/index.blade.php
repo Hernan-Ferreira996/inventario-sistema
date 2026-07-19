@@ -16,6 +16,12 @@
 {{-- TAB EMPRESA --}}
 <div class="tab-pane fade show active" id="tab-empresa">
 <div class="row justify-content-center"><div class="col-lg-9">
+@if(Auth::user()?->esSuperAdmin())
+<div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
+    <div><i class="bi bi-buildings me-2"></i>¿Necesitás gestionar más de una empresa emisora (RUC, plan, módulos, sucursales)?</div>
+    <a href="{{ route('empresas.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right-circle me-1"></i>Ir a Empresas del Sistema</a>
+</div>
+@endif
 <div class="card">
 <div class="card-header fw-semibold"><i class="bi bi-building text-primary me-2"></i>Datos de la Empresa</div>
 <div class="card-body">

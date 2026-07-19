@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'modulo'     => \App\Http\Middleware\VerificarModulo::class,
             'licencia'   => \App\Http\Middleware\VerificarLicenciaVigente::class,
             'no-superadmin' => \App\Http\Middleware\DenegarSuperAdminOperativo::class,
+            'solo-superadmin' => \App\Http\Middleware\SoloSuperAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -292,17 +292,17 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
             ->name('campos-personalizados.destroy')->middleware('permission:configuracion.editar');
     });
 
-    // ===== EMPRESAS Y SUCURSALES (solo super-admin) =====
+    // ===== EMPRESAS Y SUCURSALES (solo super-admin real, empresa_id null) =====
     Route::resource('empresas', \App\Http\Controllers\EmpresaController::class)
-        ->middleware('role:admin');
+        ->middleware('solo-superadmin');
     Route::post('empresas/{empresa}/sucursales', [\App\Http\Controllers\SucursalController::class, 'store'])
-        ->name('empresas.sucursales.store')->middleware('role:admin');
+        ->name('empresas.sucursales.store')->middleware('solo-superadmin');
     Route::patch('empresas/{empresa}/sucursales/{sucursal}', [\App\Http\Controllers\SucursalController::class, 'update'])
-        ->name('empresas.sucursales.update')->middleware('role:admin');
+        ->name('empresas.sucursales.update')->middleware('solo-superadmin');
     Route::delete('empresas/{empresa}/sucursales/{sucursal}', [\App\Http\Controllers\SucursalController::class, 'destroy'])
-        ->name('empresas.sucursales.destroy')->middleware('role:admin');
+        ->name('empresas.sucursales.destroy')->middleware('solo-superadmin');
     Route::post('empresas/{empresa}/modulos', [\App\Http\Controllers\EmpresaController::class, 'updateModulos'])
-        ->name('empresas.modulos')->middleware('role:admin');
+        ->name('empresas.modulos')->middleware('solo-superadmin');
 
     // ===== GRUPOS DE ACCESO (solo admin) =====
     Route::resource('grupos', \App\Http\Controllers\GrupoController::class)
