@@ -54,6 +54,7 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
 
     Route::resource('ciudades', \App\Http\Controllers\CiudadController::class)
         ->except(['show'])
+        ->parameters(['ciudades' => 'ciudad'])
         ->middleware('permission:configuracion.editar');
 
     // ===== VENTAS =====
@@ -120,8 +121,24 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         ->middlewareFor('store', ['permission:pagos.crear', 'no-superadmin'])
         ->middlewareFor(['edit', 'update'], 'permission:pagos.editar')
         ->middlewareFor('destroy', 'permission:pagos.eliminar');
+    Route::get('pagos/{pago}/pdf', [\App\Http\Controllers\PagoController::class, 'pdf'])
+        ->name('pagos.pdf')->middleware('permission:pagos.ver');
     Route::get('cobranzas', [\App\Http\Controllers\CobranzaController::class, 'index'])
         ->name('cobranzas.index')->middleware('permission:pagos.ver');
+
+    Route::resource('cajas', \App\Http\Controllers\CajaController::class)
+        ->except(['show'])
+        ->parameters(['cajas' => 'caja'])
+        ->middleware('permission:configuracion.editar');
+    Route::resource('rendiciones', \App\Http\Controllers\RendicionController::class)
+        ->only(['index', 'create', 'store', 'show'])
+        ->parameters(['rendiciones' => 'rendicion'])
+        ->middlewareFor(['index', 'show'], 'permission:pagos.ver')
+        ->middlewareFor(['create', 'store'], ['permission:pagos.editar', 'no-superadmin']);
+    Route::resource('cierres-caja', \App\Http\Controllers\CierreCajaController::class)
+        ->only(['index', 'create', 'store'])
+        ->middlewareFor(['index'], 'permission:pagos.ver')
+        ->middlewareFor(['create', 'store'], ['permission:pagos.editar', 'no-superadmin']);
     Route::resource('envios', \App\Http\Controllers\EnvioController::class)
         ->middlewareFor(['index', 'show'], 'permission:envios.ver')
         ->middlewareFor(['create', 'store'], ['permission:envios.crear', 'no-superadmin'])
@@ -238,6 +255,8 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         Route::post('empresa',  [\App\Http\Controllers\ConfiguracionController::class, 'guardarEmpresa'])->name('empresa')
             ->middleware('permission:configuracion.editar');
         Route::post('sistema', [\App\Http\Controllers\ConfiguracionController::class, 'guardarSistema'])->name('sistema')
+            ->middleware('permission:configuracion.editar');
+        Route::post('codigo-supervisor', [\App\Http\Controllers\ConfiguracionController::class, 'guardarCodigoSupervisor'])->name('codigo-supervisor')
             ->middleware('permission:configuracion.editar');
         Route::post('facturacion', [\App\Http\Controllers\ConfiguracionController::class, 'guardarFacturacion'])->name('facturacion')
             ->middleware('permission:configuracion.editar');

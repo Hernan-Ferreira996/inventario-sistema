@@ -95,6 +95,11 @@ body{background:#f1f5f9;min-height:100vh}
         @can('pagos.ver')
         <a href="{{ route('pagos.index') }}" class="nav-link {{ request()->routeIs('pagos.*') ? 'active' : '' }}"><i class="bi bi-cash-coin"></i>Pagos</a>
         <a href="{{ route('cobranzas.index') }}" class="nav-link {{ request()->routeIs('cobranzas.*') ? 'active' : '' }}"><i class="bi bi-hourglass-split"></i>Cobranzas</a>
+        <a href="{{ route('rendiciones.index') }}" class="nav-link {{ request()->routeIs('rendiciones.*') ? 'active' : '' }}"><i class="bi bi-wallet2"></i>Rendiciones</a>
+        <a href="{{ route('cierres-caja.index') }}" class="nav-link {{ request()->routeIs('cierres-caja.*') ? 'active' : '' }}"><i class="bi bi-safe"></i>Cierre de Caja</a>
+        @endcan
+        @can('configuracion.editar')
+        <a href="{{ route('cajas.index') }}" class="nav-link {{ request()->routeIs('cajas.*') ? 'active' : '' }}"><i class="bi bi-cash-stack"></i>Cajas</a>
         @endcan
         @can('envios.ver')
         <a href="{{ route('notas-remision.index') }}" class="nav-link {{ request()->routeIs('notas-remision.*') ? 'active' : '' }}"><i class="bi bi-truck"></i>Notas de Remisión</a>

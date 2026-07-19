@@ -137,8 +137,10 @@ class FacturaController extends Controller
         $factura->load(['pedido.cliente', 'pedido.detalles.producto', 'pagos.metodoPago', 'notasCredito']);
         $config = Configuracion::obtener();
         $metodosPago = \App\Models\MetodoPago::where('activo', true)->orderBy('nombre')->get();
+        $cajas = \App\Models\Caja::where('activo', true)->orderBy('nombre')->get();
+        $cobradores = \App\Models\User::where('empresa_id', auth()->user()->empresa_id)->orderBy('name')->get();
 
-        return view('facturas.detalle', compact('factura', 'config', 'metodosPago'));
+        return view('facturas.detalle', compact('factura', 'config', 'metodosPago', 'cajas', 'cobradores'));
     }
 
     private function esEditable(Factura $factura): bool

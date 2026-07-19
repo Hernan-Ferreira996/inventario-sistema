@@ -110,6 +110,23 @@
 </div>
 </form>
 </div></div>
+
+@if(auth()->user()->empresa_id)
+<div class="card mt-3">
+<div class="card-header fw-semibold"><i class="bi bi-shield-lock text-primary me-2"></i>Tesorería</div>
+<div class="card-body">
+<form method="POST" action="{{ route('configuracion.codigo-supervisor') }}">@csrf
+<div class="mb-2">
+    <label class="form-label fw-semibold">Código de supervisor para anular pagos</label>
+    <input type="text" name="pagos_codigo_supervisor" class="form-control" maxlength="20"
+        value="{{ old('pagos_codigo_supervisor', $codigoSupervisor) }}" placeholder="Dejar vacío para no exigir código">
+    <small class="text-muted">Si se configura, se va a pedir este código para eliminar un pago (cobranza) registrado.</small>
+</div>
+<button type="submit" class="btn btn-outline-primary btn-sm mt-2"><i class="bi bi-save me-1"></i>Guardar Código</button>
+</form>
+</div></div>
+@endif
+
 </div></div>
 </div>
 

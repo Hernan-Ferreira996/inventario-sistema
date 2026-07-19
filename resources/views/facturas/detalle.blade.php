@@ -155,6 +155,24 @@ Documento generado en <strong>modo demo</strong> — no tiene validez tributaria
             <input type="date" name="fecha_pago" class="form-control" value="{{ date('Y-m-d') }}" required>
         </div>
         <div class="mb-3">
+            <label class="form-label fw-semibold">Caja</label>
+            <select name="caja_id" class="form-select">
+                <option value="">-- Sin caja --</option>
+                @foreach($cajas as $c)
+                <option value="{{ $c->id }}">{{ $c->nombre }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Cobrador</label>
+            <select name="cobrador_id" class="form-select">
+                <option value="">-- Sin cobrador asignado --</option>
+                @foreach($cobradores as $u)
+                <option value="{{ $u->id }}" {{ $u->id == auth()->id() ? 'selected' : '' }}>{{ $u->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="mb-3">
             <label class="form-label fw-semibold">Referencia</label>
             <input type="text" name="referencia" class="form-control" placeholder="N° de comprobante, transferencia, etc.">
         </div>

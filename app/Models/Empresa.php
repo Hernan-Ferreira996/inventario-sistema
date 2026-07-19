@@ -14,7 +14,7 @@ class Empresa extends Model
         "direccion", "ciudad", "pais", "moneda", "simbolo",
         "fact_timbrado", "fact_fecha_inicio_vigencia", "fact_establecimiento",
         "fact_punto_expedicion", "fact_modo",
-        "timezone", "decimales", "stock_minimo", "activo",
+        "timezone", "decimales", "stock_minimo", "pagos_codigo_supervisor", "activo",
         "plan_id", "fecha_vencimiento_licencia", "max_usuarios",
     ];
 

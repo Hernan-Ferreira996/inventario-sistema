@@ -15,7 +15,10 @@ class Pago extends Model
     use LogsActivity;
 
     protected $table = "pagos";
-    protected $fillable = ["pedido_id", "factura_id", "usuario_id", "metodo_pago_id", "monto", "fecha_pago", "referencia", "notas"];
+    protected $fillable = [
+        "pedido_id", "factura_id", "usuario_id", "metodo_pago_id", "monto", "fecha_pago", "referencia", "notas",
+        "caja_id", "cobrador_id", "numero_recibo", "rendicion_id",
+    ];
     protected $casts = ["monto" => "decimal:2", "fecha_pago" => "date"];
 
     public function getActivitylogOptions(): LogOptions
@@ -49,4 +52,7 @@ class Pago extends Model
     public function factura(): BelongsTo { return $this->belongsTo(Factura::class); }
     public function usuario(): BelongsTo { return $this->belongsTo(User::class); }
     public function metodoPago(): BelongsTo { return $this->belongsTo(MetodoPago::class); }
+    public function caja(): BelongsTo { return $this->belongsTo(Caja::class); }
+    public function cobrador(): BelongsTo { return $this->belongsTo(User::class, "cobrador_id"); }
+    public function rendicion(): BelongsTo { return $this->belongsTo(Rendicion::class); }
 }

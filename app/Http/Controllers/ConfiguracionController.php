@@ -70,8 +70,10 @@ class ConfiguracionController extends Controller
         $camposPersonalizados = CampoPersonalizado::where('empresa_id', $empresaId)
             ->orderBy('entidad')->orderBy('orden')->get()->groupBy('entidad');
 
+        $codigoSupervisor = $empresaId ? \App\Models\Empresa::find($empresaId)?->pagos_codigo_supervisor : null;
+
         return view("configuracion.index", compact(
-            "config", "valoresCatalogo", "secuencias", "camposPersonalizados"
+            "config", "valoresCatalogo", "secuencias", "camposPersonalizados", "codigoSupervisor"
         ) + ['gruposCatalogo' => collect(self::GRUPOS_CATALOGO)]);
     }
 
@@ -221,6 +223,22 @@ class ConfiguracionController extends Controller
         $this->guardar($config);
 
         return redirect()->route("configuracion.index")->with("success", "Configuracion del sistema guardada.");
+    }
+
+    public function guardarCodigoSupervisor(Request $request)
+    {
+        $data = $request->validate([
+            "pagos_codigo_supervisor" => "nullable|string|max:20",
+        ]);
+
+        $empresaId = auth()->user()->empresa_id;
+        abort_unless($empresaId, 403);
+
+        \App\Models\Empresa::where('id', $empresaId)->update([
+            'pagos_codigo_supervisor' => $data['pagos_codigo_supervisor'] ?: null,
+        ]);
+
+        return redirect()->route("configuracion.index")->with("success", "Código de supervisor actualizado.");
     }
 
     public function guardarFacturacion(Request $request)

@@ -5,8 +5,12 @@ use App\Models\Pago;
 use App\Models\Factura;
 use App\Models\MetodoPago;
 use App\Events\PagoRegistrado;
+use App\Support\Configuracion;
+use App\Support\Numeracion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PagoController extends Controller
 {
@@ -26,8 +30,19 @@ class PagoController extends Controller
 
     public function show(Pago $pago)
     {
-        $pago->load(["factura.pedido.cliente", "metodoPago"]);
-        return view("pagos.detalle", compact("pago"));
+        $pago->load(["factura.pedido.cliente", "metodoPago", "caja", "cobrador"]);
+        $requiereCodigoSupervisor = !empty(Auth::user()->empresa?->pagos_codigo_supervisor);
+        return view("pagos.detalle", compact("pago", "requiereCodigoSupervisor"));
+    }
+
+    public function pdf(Pago $pago)
+    {
+        $pago->load(["factura.pedido.cliente", "metodoPago", "caja", "cobrador"]);
+        $config = Configuracion::obtener();
+
+        $pdf = Pdf::loadView("pagos.recibo", compact("pago", "config"))->setPaper("a5");
+
+        return $pdf->stream("recibo-{$pago->numero_recibo}.pdf");
     }
 
     public function store(Request $request)
@@ -37,6 +52,8 @@ class PagoController extends Controller
             "metodo_pago_id" => "required|exists:metodos_pago,id",
             "monto"          => "required|numeric|min:0.01",
             "fecha_pago"     => "required|date",
+            "caja_id"        => "nullable|exists:cajas,id",
+            "cobrador_id"    => "nullable|exists:users,id",
             "referencia"     => "nullable|string|max:100",
             "notas"          => "nullable|string",
         ]);
@@ -52,10 +69,13 @@ class PagoController extends Controller
             $pago = Pago::create([
                 "pedido_id"      => $factura->pedido_id,
                 "factura_id"     => $factura->id,
-                "usuario_id"     => \Illuminate\Support\Facades\Auth::id(),
+                "usuario_id"     => Auth::id(),
                 "metodo_pago_id" => $request->metodo_pago_id,
                 "monto"          => $request->monto,
                 "fecha_pago"     => $request->fecha_pago,
+                "caja_id"        => $request->caja_id ?: null,
+                "cobrador_id"    => $request->cobrador_id ?: null,
+                "numero_recibo"  => Numeracion::siguiente('pagos', null, 'REC-'),
                 "referencia"     => $request->referencia,
                 "notas"          => $request->notas,
             ]);
@@ -99,10 +119,19 @@ class PagoController extends Controller
         return redirect()->route("pagos.show", $pago)->with("success", "Pago actualizado.");
     }
 
-    public function destroy(Pago $pago)
+    public function destroy(Request $request, Pago $pago)
     {
         if (\App\Support\Cierre::estaBloqueada($pago->fecha_pago)) {
             return redirect()->route("pagos.index")->with("error", \App\Support\Cierre::mensajeBloqueo());
+        }
+
+        if ($pago->rendicion_id) {
+            return redirect()->route("pagos.index")->with("error", "No se puede eliminar un pago que ya fue incluido en una rendición.");
+        }
+
+        $codigoRequerido = Auth::user()->empresa?->pagos_codigo_supervisor;
+        if (!empty($codigoRequerido) && $request->input('codigo_supervisor') !== $codigoRequerido) {
+            return redirect()->route("pagos.index")->with("error", "Código de supervisor incorrecto. No se anuló el pago.");
         }
 
         DB::transaction(function () use ($pago) {
