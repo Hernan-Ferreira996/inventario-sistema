@@ -10,6 +10,13 @@
 <div class="col-md-6"><label class="form-label fw-semibold">Telefono</label><input type="text" name="telefono" class="form-control" value="{{ old('telefono') }}"></div>
 <div class="col-md-6"><label class="form-label fw-semibold">RUC / NIT</label><input type="text" name="ruc_nit" class="form-control" value="{{ old('ruc_nit') }}"></div>
 <div class="col-12"><label class="form-label fw-semibold">Direccion</label><textarea name="direccion" class="form-control" rows="2">{{ old('direccion') }}</textarea></div>
+<div class="col-md-6"><label class="form-label fw-semibold">Ciudad</label>
+<select name="ciudad_id" class="form-select">
+<option value="">-- Sin ciudad --</option>
+@foreach($ciudades as $ciu)
+<option value="{{ $ciu->id }}" {{ old('ciudad_id') == $ciu->id ? 'selected' : '' }}>{{ $ciu->nombre_completo }}</option>
+@endforeach
+</select></div>
 <div class="col-md-6"><label class="form-label fw-semibold">Tipo de Precio *</label>
 <select name="tipo_precio" class="form-select"><option value="minorista" {{ old('tipo_precio') == 'minorista' ? 'selected' : '' }}>Minorista</option><option value="mayorista" {{ old('tipo_precio') == 'mayorista' ? 'selected' : '' }}>Mayorista</option></select></div>
 <div class="col-md-6"><label class="form-label fw-semibold">Límite de Crédito</label><input type="number" step="0.01" min="0" name="limite_credito" class="form-control" value="{{ old('limite_credito') }}"></div>

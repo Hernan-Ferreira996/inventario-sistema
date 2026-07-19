@@ -137,6 +137,9 @@ body{background:#f1f5f9;min-height:100vh}
         <span class="nav-section">Sistema</span>
         <a href="{{ route('empresas.index') }}" class="nav-link {{ request()->routeIs('empresas.*') ? 'active' : '' }}"><i class="bi bi-building-gear"></i>Empresas</a>
         @endif
+        @can('configuracion.editar')
+        <a href="{{ route('ciudades.index') }}" class="nav-link {{ request()->routeIs('ciudades.*') ? 'active' : '' }}"><i class="bi bi-geo-alt"></i>Ciudades</a>
+        @endcan
         @role('admin')
         <a href="{{ route('configuracion.index') }}" class="nav-link {{ request()->routeIs('configuracion.*') ? 'active' : '' }}"><i class="bi bi-gear"></i>Configuración</a>
         @endrole

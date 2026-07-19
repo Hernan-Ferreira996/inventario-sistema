@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\CampoPersonalizado;
+use App\Models\Ciudad;
 use App\Models\Proveedor;
 use App\Models\PedidoCompra;
 use Illuminate\Http\Request;
@@ -28,7 +29,8 @@ class ProveedorController extends Controller
     public function create()
     {
         $campos = CampoPersonalizado::paraEntidad('proveedor');
-        return view('proveedores.crear', compact('campos'));
+        $ciudades = Ciudad::where('activo', true)->orderBy('nombre')->get();
+        return view('proveedores.crear', compact('campos', 'ciudades'));
     }
 
     public function store(Request $request)
@@ -38,6 +40,7 @@ class ProveedorController extends Controller
             'email'     => 'nullable|email|max:150|unique:proveedores,email',
             'telefono'  => 'nullable|string|max:30',
             'direccion' => 'nullable|string|max:255',
+            'ciudad_id' => 'nullable|exists:ciudades,id',
             'ruc_nit'   => 'nullable|string|max:30',
             'contacto'  => 'nullable|string|max:100',
             'pais'      => 'nullable|string|max:60',
@@ -94,7 +97,8 @@ class ProveedorController extends Controller
         $campos = $proveedor->camposPersonalizadosDisponibles();
         $valores = $proveedor->valoresCamposPersonalizadosPorNombre();
         $etiquetasTexto = $proveedor->etiquetas->pluck('nombre')->implode(', ');
-        return view('proveedores.editar', compact('proveedor', 'campos', 'valores', 'etiquetasTexto'));
+        $ciudades = Ciudad::where('activo', true)->orderBy('nombre')->get();
+        return view('proveedores.editar', compact('proveedor', 'campos', 'valores', 'etiquetasTexto', 'ciudades'));
     }
 
     public function update(Request $request, Proveedor $proveedor)
@@ -104,6 +108,7 @@ class ProveedorController extends Controller
             'email'     => 'nullable|email|max:150|unique:proveedores,email,'.$proveedor->id,
             'telefono'  => 'nullable|string|max:30',
             'direccion' => 'nullable|string|max:255',
+            'ciudad_id' => 'nullable|exists:ciudades,id',
             'ruc_nit'   => 'nullable|string|max:30',
             'contacto'  => 'nullable|string|max:100',
             'pais'      => 'nullable|string|max:60',

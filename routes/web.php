@@ -52,6 +52,10 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         ->middleware('permission:configuracion.editar');
     });
 
+    Route::resource('ciudades', \App\Http\Controllers\CiudadController::class)
+        ->except(['show'])
+        ->middleware('permission:configuracion.editar');
+
     // ===== VENTAS =====
     Route::middleware('modulo:ventas')->group(function () {
     Route::resource('pedidos', PedidoVentaController::class)

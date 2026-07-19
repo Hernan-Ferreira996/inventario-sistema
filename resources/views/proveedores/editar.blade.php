@@ -17,6 +17,13 @@
     <input type="email" name="email" class="form-control" value="{{ old('email',$proveedor->email) }}"></div>
 <div class="col-12"><label class="form-label fw-semibold">Dirección</label>
     <input type="text" name="direccion" class="form-control" value="{{ old('direccion',$proveedor->direccion) }}"></div>
+<div class="col-md-6"><label class="form-label fw-semibold">Ciudad</label>
+    <select name="ciudad_id" class="form-select">
+    <option value="">-- Sin ciudad --</option>
+    @foreach($ciudades as $ciu)
+    <option value="{{ $ciu->id }}" {{ old('ciudad_id',$proveedor->ciudad_id) == $ciu->id ? 'selected' : '' }}>{{ $ciu->nombre_completo }}</option>
+    @endforeach
+    </select></div>
 <div class="col-md-6"><label class="form-label fw-semibold">País</label>
     <input type="text" name="pais" class="form-control" value="{{ old('pais', $proveedor->pais) }}"></div>
 <div class="col-12"><div class="form-check">

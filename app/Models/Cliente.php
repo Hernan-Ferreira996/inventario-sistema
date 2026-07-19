@@ -42,7 +42,7 @@ class Cliente extends Model
     protected $table = 'clientes';
 
     protected $fillable = [
-        'nombre', 'email', 'telefono', 'direccion',
+        'nombre', 'email', 'telefono', 'direccion', 'ciudad_id',
         'ruc_nit', 'tipo_precio', 'activo', 'limite_credito',
         'expuesto_publicamente', 'funcionario',
     ];
@@ -59,5 +59,10 @@ class Cliente extends Model
     public function pedidos(): HasMany
     {
         return $this->hasMany(PedidoVenta::class);
+    }
+
+    public function ciudad(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Ciudad::class);
     }
 }

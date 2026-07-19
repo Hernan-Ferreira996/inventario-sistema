@@ -8,6 +8,7 @@
 <p class="text-muted mb-1">{{ $cliente->email ?? '—' }}</p>
 <p class="text-muted mb-1"><i class="bi bi-phone me-1"></i>{{ $cliente->telefono ?? '—' }}</p>
 <p class="text-muted mb-0">{{ $cliente->direccion ?? '—' }}</p>
+@if($cliente->ciudad)<p class="text-muted mb-0 small"><i class="bi bi-geo-alt me-1"></i>{{ $cliente->ciudad->nombre_completo }}</p>@endif
 @if($etiquetas->isNotEmpty())
 <div class="mt-2">
 @foreach($etiquetas as $etq)

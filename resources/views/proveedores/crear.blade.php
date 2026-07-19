@@ -19,6 +19,13 @@
     @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
 <div class="col-12"><label class="form-label fw-semibold">Dirección</label>
     <input type="text" name="direccion" class="form-control" value="{{ old('direccion') }}"></div>
+<div class="col-md-6"><label class="form-label fw-semibold">Ciudad</label>
+    <select name="ciudad_id" class="form-select">
+    <option value="">-- Sin ciudad --</option>
+    @foreach($ciudades as $ciu)
+    <option value="{{ $ciu->id }}" {{ old('ciudad_id') == $ciu->id ? 'selected' : '' }}>{{ $ciu->nombre_completo }}</option>
+    @endforeach
+    </select></div>
 <div class="col-md-6"><label class="form-label fw-semibold">País</label>
     <input type="text" name="pais" class="form-control" value="{{ old('pais', 'Paraguay') }}"></div>
 <div class="col-md-3"><div class="form-check mt-4"><input type="checkbox" name="expuesto_publicamente" value="1" class="form-check-input" {{ old('expuesto_publicamente') ? 'checked' : '' }}><label class="form-check-label">PEP</label></div></div>

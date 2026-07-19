@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CatalogoValoresSeeder::class);
         $this->call(SecuenciasDocumentoSeeder::class);
         $this->call(PlanDeCuentasSeeder::class);
+        $this->call(CiudadesSeeder::class);
 
         $demo = [
             ['email' => 'admin.empresa@inventario.com', 'name' => 'Administrador de Empresa', 'rol' => 'admin'],

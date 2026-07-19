@@ -11,6 +11,7 @@
         <div class="list-group-item"><small class="text-muted d-block">Email</small>{{ $proveedor->email ?? '—' }}</div>
         <div class="list-group-item"><small class="text-muted d-block">RUC / NIT</small><code>{{ $proveedor->ruc_nit ?? '—' }}</code></div>
         <div class="list-group-item"><small class="text-muted d-block">Dirección</small>{{ $proveedor->direccion ?? '—' }}</div>
+        <div class="list-group-item"><small class="text-muted d-block">Ciudad</small>{{ $proveedor->ciudad->nombre_completo ?? '—' }}</div>
         <div class="list-group-item"><small class="text-muted d-block">País</small>{{ $proveedor->pais ?? '—' }}</div>
         @if($proveedor->expuesto_publicamente || $proveedor->funcionario)
         <div class="list-group-item">

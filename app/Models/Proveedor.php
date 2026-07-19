@@ -42,7 +42,7 @@ class Proveedor extends Model
     protected $table = 'proveedores';
 
     protected $fillable = [
-        'nombre', 'email', 'telefono', 'direccion',
+        'nombre', 'email', 'telefono', 'direccion', 'ciudad_id',
         'ruc_nit', 'contacto', 'activo',
         'expuesto_publicamente', 'funcionario', 'pais',
     ];
@@ -56,5 +56,10 @@ class Proveedor extends Model
     public function pedidosCompra(): HasMany
     {
         return $this->hasMany(PedidoCompra::class);
+    }
+
+    public function ciudad(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Ciudad::class);
     }
 }

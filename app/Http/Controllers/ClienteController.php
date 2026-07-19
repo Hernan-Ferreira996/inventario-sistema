@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CampoPersonalizado;
+use App\Models\Ciudad;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -33,7 +34,8 @@ class ClienteController extends Controller
     public function create()
     {
         $campos = CampoPersonalizado::paraEntidad('cliente');
-        return view('clientes.crear', compact('campos'));
+        $ciudades = Ciudad::where('activo', true)->orderBy('nombre')->get();
+        return view('clientes.crear', compact('campos', 'ciudades'));
     }
 
     public function store(Request $request)
@@ -43,6 +45,7 @@ class ClienteController extends Controller
             'email'          => 'nullable|email|unique:clientes,email',
             'telefono'       => 'nullable|string|max:20',
             'direccion'      => 'nullable|string',
+            'ciudad_id'      => 'nullable|exists:ciudades,id',
             'ruc_nit'        => 'nullable|string|max:30',
             'tipo_precio'    => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('clientes.tipo_precio')),
             'limite_credito' => 'nullable|numeric|min:0',
@@ -111,7 +114,8 @@ class ClienteController extends Controller
         $campos = $cliente->camposPersonalizadosDisponibles();
         $valores = $cliente->valoresCamposPersonalizadosPorNombre();
         $etiquetasTexto = $cliente->etiquetas->pluck('nombre')->implode(', ');
-        return view('clientes.editar', compact('cliente', 'campos', 'valores', 'etiquetasTexto'));
+        $ciudades = Ciudad::where('activo', true)->orderBy('nombre')->get();
+        return view('clientes.editar', compact('cliente', 'campos', 'valores', 'etiquetasTexto', 'ciudades'));
     }
 
     public function update(Request $request, Cliente $cliente)
@@ -121,6 +125,7 @@ class ClienteController extends Controller
             'email'          => ['nullable', 'email', Rule::unique('clientes')->ignore($cliente->id)],
             'telefono'       => 'nullable|string|max:20',
             'direccion'      => 'nullable|string',
+            'ciudad_id'      => 'nullable|exists:ciudades,id',
             'ruc_nit'        => 'nullable|string|max:30',
             'tipo_precio'    => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('clientes.tipo_precio')),
             'activo'         => 'boolean',
