@@ -13,6 +13,12 @@
             @endforeach
         </select>
     </div>
+    <div class="col-md-6"><label class="form-label fw-semibold">Tipo *</label>
+        <select name="tipo" class="form-select" required>
+            <option value="local" @selected($pedidoCompra->tipo=='local')>Local</option>
+            <option value="importada" @selected($pedidoCompra->tipo=='importada')>Importada</option>
+        </select>
+    </div>
     <div class="col-md-6"><label class="form-label fw-semibold">Almacen</label>
         <select name="ubicacion_id" class="form-select">
             <option value="">-- Sin ubicacion --</option>

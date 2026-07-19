@@ -7,10 +7,12 @@ use App\Models\Proveedor;
 use App\Models\Producto;
 use App\Models\Ubicacion;
 use App\Events\CompraRecibida;
+use App\Support\Configuracion;
 use App\Support\Numeracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PedidoCompraController extends Controller
 {
@@ -46,6 +48,7 @@ class PedidoCompraController extends Controller
     {
         $request->validate([
             "proveedor_id"               => "required|exists:proveedores,id",
+            "tipo"                       => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.tipo')),
             "fecha_pedido"               => "required|date",
             "productos"                  => "required|array|min:1",
             "productos.*.producto_id"    => "required|exists:productos,id",
@@ -62,6 +65,7 @@ class PedidoCompraController extends Controller
                 "proveedor_id"      => $request->proveedor_id,
                 "usuario_id"        => Auth::id(),
                 "ubicacion_id"      => $request->ubicacion_id ?: null,
+                "tipo"              => $request->tipo,
                 "numero_referencia" => Numeracion::siguiente('pedidos_compra', null, 'PC-'),
                 "comentarios"       => $request->comentarios,
                 "fecha_pedido"      => $request->fecha_pedido,
@@ -90,6 +94,16 @@ class PedidoCompraController extends Controller
         return view("compras.detalle", compact("pedidoCompra","ubicaciones"));
     }
 
+    public function pdf(PedidoCompra $pedidoCompra)
+    {
+        $pedidoCompra->load(["proveedor", "detalles.producto"]);
+        $config = Configuracion::obtener();
+
+        $pdf = Pdf::loadView("compras.pdf", compact("pedidoCompra", "config"))->setPaper("a4");
+
+        return $pdf->stream("pedido-compra-{$pedidoCompra->numero_referencia}.pdf");
+    }
+
     public function edit(PedidoCompra $pedidoCompra)
     {
         if ($pedidoCompra->estado === "completado") {
@@ -105,12 +119,14 @@ class PedidoCompraController extends Controller
     {
         $request->validate([
             "proveedor_id" => "required|exists:proveedores,id",
+            "tipo"         => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.tipo')),
             "fecha_pedido" => "required|date",
             "estado"       => "required|in:" . implode(',', \App\Models\CatalogoValor::codigos('pedidos_compra.estado')),
         ]);
         $pedidoCompra->update([
             "proveedor_id"   => $request->proveedor_id,
             "ubicacion_id"   => $request->ubicacion_id ?: null,
+            "tipo"           => $request->tipo,
             "fecha_pedido"   => $request->fecha_pedido,
             "fecha_esperada" => $request->fecha_esperada ?: null,
             "comentarios"    => $request->comentarios,

@@ -8,6 +8,9 @@
         <div class="list-group list-group-flush">
             <div class="list-group-item"><small class="text-muted d-block">Referencia</small><strong>{{ $pedidoCompra->numero_referencia }}</strong></div>
             <div class="list-group-item"><small class="text-muted d-block">Proveedor</small><strong>{{ $pedidoCompra->proveedor->nombre }}</strong></div>
+            <div class="list-group-item"><small class="text-muted d-block">Tipo</small>
+                <x-badge-estado grupo="pedidos_compra.tipo" :valor="$pedidoCompra->tipo" />
+            </div>
             <div class="list-group-item"><small class="text-muted d-block">Fecha Pedido</small>{{ $pedidoCompra->fecha_pedido->format('d/m/Y') }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Fecha Esperada</small>{{ $pedidoCompra->fecha_esperada?->format('d/m/Y') ?? 'Sin fecha' }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Estado</small>
@@ -25,6 +28,7 @@
         </button>
         <a href="{{ route('compras.edit',$pedidoCompra) }}" class="btn btn-outline-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
         @endif
+        <a href="{{ route('compras.pdf',$pedidoCompra) }}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-file-pdf me-1"></i>Ver / Descargar PDF</a>
         <a href="{{ route('compras.index') }}" class="btn btn-outline-secondary">Volver a lista</a>
     </div>
 </div>

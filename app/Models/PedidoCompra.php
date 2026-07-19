@@ -29,7 +29,7 @@ class PedidoCompra extends Model
     }
 
     protected $fillable = [
-        'proveedor_id', 'usuario_id', 'ubicacion_id',
+        'proveedor_id', 'usuario_id', 'ubicacion_id', 'tipo',
         'numero_referencia', 'comentarios', 'fecha_pedido',
         'fecha_esperada', 'total', 'impuesto_incluido', 'estado',
     ];

@@ -22,6 +22,13 @@
                     @error('proveedor_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
+                    <label class="form-label fw-semibold">Tipo *</label>
+                    <select name="tipo" class="form-select" required>
+                        <option value="local" {{ old('tipo','local') == 'local' ? 'selected' : '' }}>Local</option>
+                        <option value="importada" {{ old('tipo') == 'importada' ? 'selected' : '' }}>Importada</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">Almacén destino</label>
                     <select name="ubicacion_id" class="form-select">
                         <option value="">-- Sin ubicación --</option>

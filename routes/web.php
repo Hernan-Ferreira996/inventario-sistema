@@ -136,6 +136,8 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         ->middlewareFor('destroy', 'permission:compras.eliminar');
     Route::post('compras/{pedidoCompra}/recibir', [\App\Http\Controllers\PedidoCompraController::class, 'recibirStock'])
         ->name('compras.recibir')->middleware(['permission:compras.editar', 'no-superadmin']);
+    Route::get('compras/{pedidoCompra}/pdf', [\App\Http\Controllers\PedidoCompraController::class, 'pdf'])
+        ->name('compras.pdf')->middleware('permission:compras.ver');
 
     Route::resource('proveedores', \App\Http\Controllers\ProveedorController::class)
         ->parameters(['proveedores' => 'proveedor'])

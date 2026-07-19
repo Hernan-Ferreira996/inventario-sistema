@@ -38,6 +38,10 @@ class CatalogoValoresSeeder extends Seeder
                 ['completado', 'Completado', '#34d399', '#000000'],
                 ['cancelado', 'Cancelado', '#f87171', '#ffffff'],
             ],
+            'pedidos_compra.tipo' => [
+                ['local', 'Local', '#60a5fa', '#ffffff'],
+                ['importada', 'Importada', '#a78bfa', '#ffffff'],
+            ],
             'notas_credito.motivo' => [
                 ['devolucion_total', 'Devolución Total', '#f87171', '#ffffff'],
                 ['devolucion_parcial', 'Devolución Parcial', '#fb923c', '#ffffff'],
