@@ -44,7 +44,7 @@ table { width: 100%; border-collapse: collapse; }
 <table class="recuadro" style="border-top:none">
 <tr class="datos"><td style="width:50%"><strong>Fecha:</strong> {{ $notaRemision->fecha_emision->format('d/m/Y') }}</td>
 <td style="width:50%"><strong>Motivo:</strong> {{ ucfirst($notaRemision->motivo) }}</td></tr>
-<tr class="datos"><td colspan="2"><strong>Destinatario:</strong> {{ strtoupper($notaRemision->pedido->cliente->nombre ?? '') }}</td></tr>
+<tr class="datos"><td colspan="2"><strong>Destinatario:</strong> {{ strtoupper($notaRemision->cliente->nombre ?? '') }}</td></tr>
 <tr class="datos"><td><strong>Dirección destino:</strong> {{ $notaRemision->direccion_destino }}</td>
 <td><strong>Origen:</strong> {{ $notaRemision->ubicacionOrigen->nombre ?? '—' }}</td></tr>
 <tr class="datos"><td><strong>Transportista:</strong> {{ $notaRemision->transportista }}</td>

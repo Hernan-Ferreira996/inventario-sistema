@@ -55,6 +55,12 @@
         @endif
         @endcan
 
+        @can('envios.crear')
+        @if($presupuesto->estado === 'aprobado' && !Auth::user()?->esSuperAdmin())
+        <a href="{{ route('notas-remision.create',['presupuesto' => $presupuesto->id]) }}" class="btn btn-outline-success"><i class="bi bi-truck me-1"></i>Generar Remisión (Anticipo)</a>
+        @endif
+        @endcan
+
         <a href="{{ route('presupuestos.pdf',$presupuesto) }}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-file-pdf me-1"></i>Ver / Descargar PDF</a>
         <a href="{{ route('presupuestos.index') }}" class="btn btn-outline-secondary">Volver a lista</a>
     </div>

@@ -17,7 +17,7 @@ class NotaRemision extends Model
 
     protected $table = "notas_remision";
     protected $fillable = [
-        "pedido_id", "envio_id", "usuario_id", "ubicacion_origen_id",
+        "pedido_id", "presupuesto_id", "envio_id", "usuario_id", "ubicacion_origen_id",
         "numero_documento", "timbrado", "establecimiento", "punto_expedicion", "cdc", "modo",
         "fecha_emision", "motivo", "afecta_stock", "direccion_destino", "transportista", "vehiculo_placa", "observaciones",
     ];
@@ -40,6 +40,7 @@ class NotaRemision extends Model
     }
 
     public function pedido(): BelongsTo { return $this->belongsTo(PedidoVenta::class, "pedido_id"); }
+    public function presupuesto(): BelongsTo { return $this->belongsTo(Presupuesto::class, "presupuesto_id"); }
     public function envio(): BelongsTo { return $this->belongsTo(Envio::class); }
     public function usuario(): BelongsTo { return $this->belongsTo(User::class); }
     public function ubicacionOrigen(): BelongsTo { return $this->belongsTo(Ubicacion::class, "ubicacion_origen_id"); }
@@ -48,5 +49,19 @@ class NotaRemision extends Model
     public function getNumeroCompletoAttribute(): string
     {
         return "{$this->establecimiento}-{$this->punto_expedicion}-{$this->numero_documento}";
+    }
+
+    /**
+     * Cliente de la remisión, sea que provenga de un Pedido o directamente
+     * de un Presupuesto (remisión contra anticipo, antes de convertirlo).
+     */
+    public function getClienteAttribute(): ?Cliente
+    {
+        return $this->pedido?->cliente ?? $this->presupuesto?->cliente;
+    }
+
+    public function getOrigenReferenciaAttribute(): ?string
+    {
+        return $this->pedido?->numero_referencia ?? $this->presupuesto?->numero_documento;
     }
 }

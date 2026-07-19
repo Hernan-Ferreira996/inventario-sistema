@@ -1,17 +1,31 @@
 @extends('layouts.app')
 @section('titulo','Nueva Nota de Remisión')
 @section('contenido')
+@php
+$origen = $pedido ?? $presupuesto;
+$origenReferencia = $pedido->numero_referencia ?? $presupuesto->numero_documento;
+$origenDetalles = $pedido->detalles ?? $presupuesto->detalles;
+$origenLabel = $pedido ? 'Pedido' : 'Presupuesto (anticipo)';
+$volverRoute = $pedido ? route('pedidos.show',$pedido) : route('presupuestos.show',$presupuesto);
+@endphp
 
 @if($config['fact_modo'] === 'local')
 <div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>Documento en modo demo, sin validez tributaria.</div>
 @endif
+@if($presupuesto)
+<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Remisión emitida contra anticipo/presupuesto, antes de convertirlo en pedido.</div>
+@endif
 
 <div class="card">
-    <div class="card-header fw-semibold">Nota de Remisión — Pedido {{ $pedido->numero_referencia }}</div>
+    <div class="card-header fw-semibold">Nota de Remisión — {{ $origenLabel }} {{ $origenReferencia }}</div>
     <div class="card-body">
         <form method="POST" action="{{ route('notas-remision.store') }}">
             @csrf
+            @if($pedido)
             <input type="hidden" name="pedido_id" value="{{ $pedido->id }}">
+            @else
+            <input type="hidden" name="presupuesto_id" value="{{ $presupuesto->id }}">
+            @endif
 
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
@@ -39,7 +53,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Dirección de Destino</label>
-                    <input type="text" name="direccion_destino" class="form-control" value="{{ $pedido->direccion_entrega }}">
+                    <input type="text" name="direccion_destino" class="form-control" value="{{ $pedido->direccion_entrega ?? '' }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Transportista</label>
@@ -65,7 +79,7 @@
             <table class="table table-sm">
                 <thead><tr><th>Producto</th><th class="text-end">Cantidad</th></tr></thead>
                 <tbody>
-                @foreach($pedido->detalles as $i => $d)
+                @foreach($origenDetalles as $i => $d)
                 <tr>
                     <td>
                         <input type="hidden" name="productos[{{ $i }}][producto_id]" value="{{ $d->producto_id }}">
@@ -81,7 +95,7 @@
 
             <div class="d-flex gap-2 border-top pt-3 mt-3">
                 <button type="submit" class="btn btn-primary px-4"><i class="bi bi-truck me-1"></i>Generar Nota de Remisión</button>
-                <a href="{{ route('pedidos.show',$pedido) }}" class="btn btn-outline-secondary">Cancelar</a>
+                <a href="{{ $volverRoute }}" class="btn btn-outline-secondary">Cancelar</a>
             </div>
         </form>
     </div>

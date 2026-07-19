@@ -12,8 +12,8 @@
         <div class="card-header fw-semibold">Datos de la Remisión</div>
         <div class="list-group list-group-flush">
             <div class="list-group-item"><small class="text-muted d-block">N° Documento</small><strong>{{ $notaRemision->numero_completo }}</strong></div>
-            <div class="list-group-item"><small class="text-muted d-block">Pedido</small>{{ $notaRemision->pedido->numero_referencia ?? '—' }}</div>
-            <div class="list-group-item"><small class="text-muted d-block">Cliente</small>{{ $notaRemision->pedido->cliente->nombre ?? '—' }}</div>
+            <div class="list-group-item"><small class="text-muted d-block">{{ $notaRemision->presupuesto_id ? 'Presupuesto (anticipo)' : 'Pedido' }}</small>{{ $notaRemision->origen_referencia ?? '—' }}</div>
+            <div class="list-group-item"><small class="text-muted d-block">Cliente</small>{{ $notaRemision->cliente->nombre ?? '—' }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Fecha</small>{{ $notaRemision->fecha_emision->format('d/m/Y') }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Motivo</small>{{ ucfirst($notaRemision->motivo) }}</div>
             <div class="list-group-item"><small class="text-muted d-block">Afecta stock</small>

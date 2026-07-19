@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NotaRemision;
 use App\Models\PedidoVenta;
+use App\Models\Presupuesto;
 use App\Models\Ubicacion;
 use App\Models\MovimientoStock;
 use App\Support\Configuracion;
@@ -16,24 +17,39 @@ class NotaRemisionController extends Controller
 {
     public function index()
     {
-        $notas = NotaRemision::with('pedido.cliente')->latest()->paginate(20);
+        $notas = NotaRemision::with('pedido.cliente', 'presupuesto.cliente')->latest()->paginate(20);
         return view('notas-remision.lista', compact('notas'));
     }
 
     public function create(Request $request)
     {
-        $pedido = PedidoVenta::with(['cliente', 'detalles.producto'])->findOrFail($request->pedido);
         $config = Configuracion::obtener();
         $ubicaciones = Ubicacion::where('activo', true)->visiblesPara(Auth::user())->orderBy('nombre')->get();
+
+        if ($request->filled('presupuesto')) {
+            $presupuesto = Presupuesto::with(['cliente', 'detalles.producto'])->findOrFail($request->presupuesto);
+            if ($presupuesto->estado !== 'aprobado') {
+                return redirect()->route('presupuestos.show', $presupuesto)
+                    ->with('error', 'El presupuesto debe estar aprobado para generar una remisión contra anticipo.');
+            }
+            $pedido = null;
+            $proximoNumero = Numeracion::previsualizar('notas_remision');
+
+            return view('notas-remision.crear', compact('pedido', 'presupuesto', 'config', 'ubicaciones', 'proximoNumero'));
+        }
+
+        $pedido = PedidoVenta::with(['cliente', 'detalles.producto'])->findOrFail($request->pedido);
+        $presupuesto = null;
         $proximoNumero = Numeracion::previsualizar('notas_remision', $pedido->sucursal_id);
 
-        return view('notas-remision.crear', compact('pedido', 'config', 'ubicaciones', 'proximoNumero'));
+        return view('notas-remision.crear', compact('pedido', 'presupuesto', 'config', 'ubicaciones', 'proximoNumero'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'pedido_id'           => 'required|exists:pedidos_venta,id',
+            'pedido_id'           => 'required_without:presupuesto_id|nullable|exists:pedidos_venta,id',
+            'presupuesto_id'      => 'required_without:pedido_id|nullable|exists:presupuestos,id',
             'ubicacion_origen_id' => 'required|exists:ubicaciones,id',
             'motivo'              => 'required|in:' . implode(',', \App\Models\CatalogoValor::codigos('notas_remision.motivo')),
             'afecta_stock'        => 'boolean',
@@ -49,14 +65,15 @@ class NotaRemisionController extends Controller
 
         $config = Configuracion::obtener();
 
-        $pedidoParaSucursal = PedidoVenta::findOrFail($request->pedido_id);
+        $sucursalId = $request->filled('pedido_id') ? PedidoVenta::findOrFail($request->pedido_id)->sucursal_id : null;
         $afectaStock = $request->boolean('afecta_stock');
-        $nota = DB::transaction(function () use ($request, $config, $pedidoParaSucursal, $afectaStock) {
+        $nota = DB::transaction(function () use ($request, $config, $sucursalId, $afectaStock) {
             $nota = NotaRemision::create([
-                'pedido_id'           => $request->pedido_id,
+                'pedido_id'           => $request->pedido_id ?: null,
+                'presupuesto_id'      => $request->presupuesto_id ?: null,
                 'usuario_id'          => Auth::id(),
                 'ubicacion_origen_id' => $request->ubicacion_origen_id,
-                'numero_documento'    => Numeracion::siguiente('notas_remision', $pedidoParaSucursal->sucursal_id),
+                'numero_documento'    => Numeracion::siguiente('notas_remision', $sucursalId),
                 'timbrado'            => $config['fact_timbrado'],
                 'establecimiento'     => $config['fact_establecimiento'],
                 'punto_expedicion'    => $config['fact_punto_expedicion'],
@@ -106,7 +123,7 @@ class NotaRemisionController extends Controller
 
     public function show(NotaRemision $notaRemision)
     {
-        $notaRemision->load(['pedido.cliente', 'detalles.producto', 'usuario', 'ubicacionOrigen']);
+        $notaRemision->load(['pedido.cliente', 'presupuesto.cliente', 'detalles.producto', 'usuario', 'ubicacionOrigen']);
         $config = Configuracion::obtener();
 
         return view('notas-remision.detalle', compact('notaRemision', 'config'));
@@ -114,7 +131,7 @@ class NotaRemisionController extends Controller
 
     public function pdf(NotaRemision $notaRemision)
     {
-        $notaRemision->load(['pedido.cliente', 'detalles.producto', 'ubicacionOrigen']);
+        $notaRemision->load(['pedido.cliente', 'presupuesto.cliente', 'detalles.producto', 'ubicacionOrigen']);
         $config = Configuracion::obtener();
 
         $pdf = Pdf::loadView('notas-remision.pdf', compact('notaRemision', 'config'))->setPaper('a4');
