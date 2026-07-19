@@ -2,7 +2,7 @@
 @section('titulo','Nuevo Traslado de Stock')
 @section('contenido')
 
-<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>El traslado descuenta el stock del almacén de origen y lo suma al almacén de destino de forma inmediata.</div>
+<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>El traslado descuenta el stock del almacén de origen al registrarlo. El almacén de destino recién recibe el stock cuando se confirme la recepción (puede diferir de la cantidad enviada).</div>
 
 <div class="card">
     <div class="card-header fw-semibold">Nuevo Traslado entre Almacenes</div>

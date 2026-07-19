@@ -12,7 +12,7 @@
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead class="table-light"><tr><th>Fecha</th><th>Origen</th><th>Destino</th><th>Referencia</th><th>Usuario</th><th></th></tr></thead>
+            <thead class="table-light"><tr><th>Fecha</th><th>Origen</th><th>Destino</th><th>Referencia</th><th class="text-center">Estado</th><th>Usuario</th><th></th></tr></thead>
             <tbody>
             @forelse($traslados as $t)
             <tr>
@@ -20,11 +20,12 @@
                 <td><span class="badge bg-secondary">{{ $t->ubicacionOrigen->nombre ?? '—' }}</span></td>
                 <td><span class="badge bg-primary">{{ $t->ubicacionDestino->nombre ?? '—' }}</span></td>
                 <td>{{ $t->referencia ?: '—' }}</td>
+                <td class="text-center"><x-badge-estado grupo="traslados.estado" :valor="$t->estado" /></td>
                 <td>{{ $t->usuario->name ?? '—' }}</td>
                 <td><a href="{{ route('traslados.show',$t) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a></td>
             </tr>
             @empty
-            <tr><td colspan="6" class="text-center py-5 text-muted">
+            <tr><td colspan="7" class="text-center py-5 text-muted">
                 <i class="bi bi-arrow-left-right d-block mb-2" style="font-size:2rem"></i>
                 Sin traslados registrados. @if(!Auth::user()?->esSuperAdmin())<a href="{{ route('traslados.create') }}">Crear el primero</a>@endif
             </td></tr>

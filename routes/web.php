@@ -175,8 +175,13 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
 
     Route::resource('traslados', \App\Http\Controllers\TrasladoController::class)
         ->only(['index', 'create', 'store', 'show'])
+        ->parameters(['traslados' => 'traslado'])
         ->middlewareFor(['index', 'show'], 'permission:compras.ver')
         ->middlewareFor(['create', 'store'], ['permission:productos.editar', 'no-superadmin']);
+    Route::get('traslados/{traslado}/confirmar-recepcion', [\App\Http\Controllers\TrasladoController::class, 'confirmarRecepcion'])
+        ->name('traslados.confirmar-recepcion')->middleware(['permission:productos.editar', 'no-superadmin']);
+    Route::post('traslados/{traslado}/recibir', [\App\Http\Controllers\TrasladoController::class, 'guardarRecepcion'])
+        ->name('traslados.recibir')->middleware(['permission:productos.editar', 'no-superadmin']);
 
     Route::resource('facturas-proveedor', \App\Http\Controllers\FacturaProveedorController::class)
         ->parameters(['facturas-proveedor' => 'facturaProveedor'])

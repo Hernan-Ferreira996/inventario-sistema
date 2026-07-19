@@ -49,6 +49,10 @@ class CatalogoValoresSeeder extends Seeder
                 ['local', 'Local', '#60a5fa', '#ffffff'],
                 ['importada', 'Importada', '#a78bfa', '#ffffff'],
             ],
+            'traslados.estado' => [
+                ['en_transito', 'En Tránsito', '#fbbf24', '#000000'],
+                ['recibido', 'Recibido', '#34d399', '#000000'],
+            ],
             'notas_credito.motivo' => [
                 ['devolucion_total', 'Devolución Total', '#f87171', '#ffffff'],
                 ['devolucion_parcial', 'Devolución Parcial', '#fb923c', '#ffffff'],

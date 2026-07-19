@@ -16,8 +16,11 @@ class TrasladoStock extends Model
     use LogsActivity;
 
     protected $table = "traslados_stock";
-    protected $fillable = ["usuario_id", "ubicacion_origen_id", "ubicacion_destino_id", "referencia", "notas", "fecha_traslado"];
-    protected $casts = ["fecha_traslado" => "date"];
+    protected $fillable = [
+        "usuario_id", "ubicacion_origen_id", "ubicacion_destino_id", "referencia", "notas", "fecha_traslado",
+        "estado", "fecha_recepcion", "usuario_recepcion_id",
+    ];
+    protected $casts = ["fecha_traslado" => "date", "fecha_recepcion" => "date"];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -38,6 +41,7 @@ class TrasladoStock extends Model
     }
 
     public function usuario(): BelongsTo { return $this->belongsTo(User::class); }
+    public function usuarioRecepcion(): BelongsTo { return $this->belongsTo(User::class, "usuario_recepcion_id"); }
     public function ubicacionOrigen(): BelongsTo { return $this->belongsTo(Ubicacion::class, "ubicacion_origen_id"); }
     public function ubicacionDestino(): BelongsTo { return $this->belongsTo(Ubicacion::class, "ubicacion_destino_id"); }
     public function detalles(): HasMany { return $this->hasMany(DetalleTraslado::class, "traslado_id"); }
