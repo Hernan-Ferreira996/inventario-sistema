@@ -91,7 +91,10 @@
 </div>
 
 <div class="col-md-8">
-<div class="card"><div class="card-header">Resumen</div><div class="card-body">
+<div class="card"><div class="card-header d-flex justify-content-between align-items-center">
+    <span>Resumen</span>
+    <x-badge-estado grupo="clientes.nivel_moroso" :valor="$cliente->nivelMoroso()" />
+</div><div class="card-body">
 <div class="row text-center g-3">
 <div class="col"><div class="fw-bold fs-4">{{ $resumen['total_pedidos'] }}</div><div class="text-muted small">Pedidos</div></div>
 <div class="col"><div class="fw-bold fs-4">{{ number_format($resumen['total_comprado'],2) }}</div><div class="text-muted small">Total Comprado</div></div>

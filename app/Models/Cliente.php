@@ -66,4 +66,31 @@ class Cliente extends Model
     {
         return $this->belongsTo(Ciudad::class);
     }
+
+    /**
+     * Nivel de moroso calculado a partir de la factura vencida más antigua
+     * con saldo pendiente (pendiente o parcial). No se persiste: se recalcula
+     * en cada consulta a partir del historial real de facturas.
+     */
+    public function nivelMoroso(): string
+    {
+        $facturaVencida = Factura::whereHas('pedido', fn($q) => $q->where('cliente_id', $this->id))
+            ->whereIn('estado', ['pendiente', 'parcial'])
+            ->whereNotNull('fecha_vencimiento')
+            ->whereDate('fecha_vencimiento', '<', now())
+            ->orderBy('fecha_vencimiento')
+            ->first();
+
+        if (!$facturaVencida) {
+            return 'al_dia';
+        }
+
+        $diasVencida = (int) abs(now()->diffInDays($facturaVencida->fecha_vencimiento));
+
+        return match (true) {
+            $diasVencida <= 30 => 'leve',
+            $diasVencida <= 60 => 'moderado',
+            default => 'grave',
+        };
+    }
 }

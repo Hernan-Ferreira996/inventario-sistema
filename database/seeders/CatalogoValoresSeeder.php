@@ -53,6 +53,12 @@ class CatalogoValoresSeeder extends Seeder
                 ['en_transito', 'En Tránsito', '#fbbf24', '#000000'],
                 ['recibido', 'Recibido', '#34d399', '#000000'],
             ],
+            'clientes.nivel_moroso' => [
+                ['al_dia', 'Al día', '#34d399', '#000000'],
+                ['leve', 'Mora leve', '#fbbf24', '#000000'],
+                ['moderado', 'Mora moderada', '#fb923c', '#ffffff'],
+                ['grave', 'Mora grave', '#f87171', '#ffffff'],
+            ],
             'notas_credito.motivo' => [
                 ['devolucion_total', 'Devolución Total', '#f87171', '#ffffff'],
                 ['devolucion_parcial', 'Devolución Parcial', '#fb923c', '#ffffff'],
