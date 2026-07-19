@@ -61,6 +61,11 @@ class Producto extends Model
         return $this->hasMany(MovimientoStock::class);
     }
 
+    public function minimosUbicacion(): HasMany
+    {
+        return $this->hasMany(StockMinimoUbicacion::class);
+    }
+
     public function stockTotal(): float
     {
         return (float) $this->movimientos()->sum('cantidad');
@@ -105,11 +110,20 @@ class Producto extends Model
     }
 
     /**
-     * Umbral de stock mínimo a usar para este producto: el propio si fue
-     * definido, o si no el valor por defecto configurado en la empresa.
+     * Umbral de stock mínimo a usar para este producto. Si se pasa $ubicacionId
+     * y existe un mínimo configurado para esa combinación producto+depósito, ese
+     * valor tiene prioridad; si no, cae al mínimo del producto o al default de
+     * empresa (mismo comportamiento de siempre).
      */
-    public function stockMinimoEfectivo(): float
+    public function stockMinimoEfectivo(?int $ubicacionId = null): float
     {
+        if ($ubicacionId !== null) {
+            $minimoUbicacion = $this->minimosUbicacion->firstWhere('ubicacion_id', $ubicacionId);
+            if ($minimoUbicacion) {
+                return (float) $minimoUbicacion->cantidad_minima;
+            }
+        }
+
         if ($this->stock_minimo !== null) {
             return (float) $this->stock_minimo;
         }

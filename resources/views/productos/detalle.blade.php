@@ -25,16 +25,28 @@
 <span>Stock por Ubicacion</span>
 @if($stockComprometidoTotal > 0)<small class="text-muted">Comprometido total: <span class="text-warning fw-semibold">{{ number_format($stockComprometidoTotal,2) }}</span></small>@endif
 </div>
-<div class="table-responsive"><table class="table mb-0"><thead><tr><th>Ubicacion</th><th class="text-end">Stock físico</th><th class="text-end">Comprometido</th><th class="text-end">Disponible</th></tr></thead>
+<div class="table-responsive"><table class="table mb-0"><thead><tr><th>Ubicacion</th><th class="text-end">Stock físico</th><th class="text-end">Comprometido</th><th class="text-end">Disponible</th><th class="text-end" style="width:160px">Mínimo del depósito</th></tr></thead>
 <tbody>
 @forelse($stockPorUbicacion as $s)
-<tr>
+<tr class="{{ $s->total <= $s->minimo ? 'table-warning' : '' }}">
 <td>{{ $s->ubicacion?->nombre ?? 'Desconocida' }}</td>
 <td class="text-end fw-semibold {{ $s->total <= 0 ? 'text-danger' : 'text-success' }}">{{ number_format($s->total,2) }}</td>
 <td class="text-end {{ $s->comprometido > 0 ? 'text-warning fw-semibold' : 'text-muted' }}">{{ number_format($s->comprometido,2) }}</td>
 <td class="text-end fw-semibold {{ $s->disponible <= 0 ? 'text-danger' : 'text-success' }}">{{ number_format($s->disponible,2) }}</td>
+<td class="text-end">
+@can('productos.editar')
+<form method="POST" action="{{ route('productos.stock-minimo',$producto) }}" class="d-flex gap-1 justify-content-end">
+    @csrf
+    <input type="hidden" name="ubicacion_id" value="{{ $s->ubicacion_id }}">
+    <input type="number" name="cantidad_minima" class="form-control form-control-sm text-end" style="width:80px" step="0.01" min="0" value="{{ $s->minimo }}">
+    <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-check-lg"></i></button>
+</form>
+@else
+{{ number_format($s->minimo,2) }}
+@endcan
+</td>
 </tr>
-@empty<tr><td colspan="4" class="text-center text-muted py-3">Sin movimientos de stock</td></tr>
+@empty<tr><td colspan="5" class="text-center text-muted py-3">Sin movimientos de stock</td></tr>
 @endforelse
 </tbody></table></div></div>
 <div class="card"><div class="card-header d-flex justify-content-between align-items-center">

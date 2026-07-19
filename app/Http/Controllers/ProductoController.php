@@ -89,7 +89,7 @@ class ProductoController extends Controller
 
     public function show(Producto $producto)
     {
-        $producto->load(['categoria', 'unidad', 'impuesto']);
+        $producto->load(['categoria', 'unidad', 'impuesto', 'minimosUbicacion']);
 
         $stockPorUbicacion = $producto->movimientos()
             ->with('ubicacion')
@@ -100,6 +100,7 @@ class ProductoController extends Controller
                 $comprometido = $producto->stockComprometido($fila->ubicacion_id);
                 $fila->comprometido = $comprometido;
                 $fila->disponible = $fila->total - $comprometido;
+                $fila->minimo = $producto->stockMinimoEfectivo($fila->ubicacion_id);
                 return $fila;
             });
 
@@ -209,5 +210,20 @@ class ProductoController extends Controller
         }
 
         return back()->with('exito', 'Stock actualizado exitosamente.');
+    }
+
+    public function guardarStockMinimo(Request $request, Producto $producto)
+    {
+        $request->validate([
+            'ubicacion_id'     => 'required|exists:ubicaciones,id',
+            'cantidad_minima'  => 'required|numeric|min:0',
+        ]);
+
+        \App\Models\StockMinimoUbicacion::updateOrCreate(
+            ['producto_id' => $producto->id, 'ubicacion_id' => $request->ubicacion_id],
+            ['cantidad_minima' => $request->cantidad_minima]
+        );
+
+        return back()->with('exito', 'Stock mínimo del depósito actualizado.');
     }
 }

@@ -33,6 +33,8 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         ->middlewareFor('destroy', 'permission:productos.eliminar');
     Route::post('productos/{producto}/stock', [ProductoController::class, 'ajustarStock'])
         ->name('productos.stock')->middleware('permission:productos.editar');
+    Route::post('productos/{producto}/stock-minimo', [ProductoController::class, 'guardarStockMinimo'])
+        ->name('productos.stock-minimo')->middleware('permission:productos.editar');
     Route::get('api/productos/buscar', [ProductoController::class, 'buscarProducto'])
         ->name('api.productos.buscar')->middleware('permission:productos.ver');
 
