@@ -28,15 +28,17 @@ class GrupoController extends Controller
                 'notas_remision'=> 'Notas de Remisión', // mapped via envios
             ],
             'Compras' => [
-                'compras'     => 'Compras',
-                'proveedores' => 'Proveedores',
-                'traslados'   => 'Traslados de Stock',
+                'compras'            => 'Compras',
+                'proveedores'        => 'Proveedores',
+                'traslados'          => 'Traslados de Stock',
+                'facturas_proveedor' => 'Facturas de Proveedor',
             ],
             'Reportes' => [
                 'reportes' => 'Reportes',
             ],
             'Contabilidad' => [
-                'contabilidad' => 'Plan de Cuentas y Asientos',
+                'contabilidad'  => 'Plan de Cuentas y Asientos',
+                'centros_costo' => 'Centros de Costo',
             ],
             'Administración' => [
                 'usuarios'       => 'Usuarios',
