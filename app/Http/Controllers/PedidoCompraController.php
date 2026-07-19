@@ -144,6 +144,10 @@ class PedidoCompraController extends Controller
 
     public function destroy(PedidoCompra $pedidoCompra)
     {
+        if (\App\Support\Cierre::estaBloqueada($pedidoCompra->fecha_pedido)) {
+            return redirect()->route("compras.index")->with("error", \App\Support\Cierre::mensajeBloqueo());
+        }
+
         if ($pedidoCompra->estado !== "pendiente") {
             return redirect()->route("compras.index")->with("error","Solo se pueden eliminar pedidos pendientes.");
         }

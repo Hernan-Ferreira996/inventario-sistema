@@ -124,6 +124,10 @@ class NotaRemisionController extends Controller
 
     public function destroy(NotaRemision $notaRemision)
     {
+        if (\App\Support\Cierre::estaBloqueada($notaRemision->fecha_emision)) {
+            return redirect()->route('notas-remision.index')->with('error', \App\Support\Cierre::mensajeBloqueo());
+        }
+
         $notaRemision->delete();
         return redirect()->route('notas-remision.index')->with('success', 'Nota de remisión eliminada.');
     }

@@ -218,6 +218,10 @@ class PedidoVentaController extends Controller
 
     public function destroy(PedidoVenta $pedido)
     {
+        if (\App\Support\Cierre::estaBloqueada($pedido->fecha_pedido)) {
+            return redirect()->route('pedidos.index')->with('error', \App\Support\Cierre::mensajeBloqueo());
+        }
+
         if ($pedido->facturas()->exists()) {
             return redirect()->route('pedidos.index')
                 ->with('error', 'No se puede eliminar un pedido que ya tiene factura generada. Anulá la factura primero mediante una Nota de Crédito.');

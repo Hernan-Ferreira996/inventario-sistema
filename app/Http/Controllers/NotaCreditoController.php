@@ -131,6 +131,10 @@ class NotaCreditoController extends Controller
 
     public function destroy(NotaCredito $notaCredito)
     {
+        if (\App\Support\Cierre::estaBloqueada($notaCredito->fecha_emision)) {
+            return redirect()->route('notas-credito.index')->with('error', \App\Support\Cierre::mensajeBloqueo());
+        }
+
         $notaCredito->delete();
         return redirect()->route('notas-credito.index')->with('success', 'Nota de crédito eliminada.');
     }

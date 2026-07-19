@@ -119,6 +119,9 @@ body{background:#f1f5f9;min-height:100vh}
         @can('centros_costo.ver')
         <a href="{{ route('centros-costo.index') }}" class="nav-link {{ request()->routeIs('centros-costo.*') ? 'active' : '' }}"><i class="bi bi-diagram-2"></i>Centros de Costo</a>
         @endcan
+        @can('contabilidad.ver')
+        <a href="{{ route('cierres.index') }}" class="nav-link {{ request()->routeIs('cierres.*') ? 'active' : '' }}"><i class="bi bi-lock"></i>Cierre de Períodos</a>
+        @endcan
         @endcanany
         @endmodulo
 

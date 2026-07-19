@@ -228,6 +228,10 @@ class FacturaController extends Controller
 
     public function destroy(Factura $factura)
     {
+        if (\App\Support\Cierre::estaBloqueada($factura->fecha_factura)) {
+            return redirect()->route('facturas.index')->with('error', \App\Support\Cierre::mensajeBloqueo());
+        }
+
         if ($factura->estado !== 'pendiente' || $factura->monto_pagado > 0) {
             return redirect()->route('facturas.index')
                 ->with('error', 'No se puede eliminar una factura con pagos registrados. Generá una Nota de Crédito en su lugar.');

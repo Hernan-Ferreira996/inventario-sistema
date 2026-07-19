@@ -101,6 +101,10 @@ class PagoController extends Controller
 
     public function destroy(Pago $pago)
     {
+        if (\App\Support\Cierre::estaBloqueada($pago->fecha_pago)) {
+            return redirect()->route("pagos.index")->with("error", \App\Support\Cierre::mensajeBloqueo());
+        }
+
         DB::transaction(function () use ($pago) {
             $factura = $pago->factura;
             if ($factura) {

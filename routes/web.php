@@ -196,6 +196,12 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         ->middlewareFor(['edit', 'update'], 'permission:centros_costo.editar')
         ->middlewareFor('destroy', 'permission:centros_costo.eliminar');
 
+    Route::resource('cierres', \App\Http\Controllers\CierreController::class)
+        ->only(['index', 'store'])
+        ->middleware('modulo:contabilidad')
+        ->middlewareFor(['index'], 'permission:contabilidad.ver')
+        ->middlewareFor(['store'], 'permission:contabilidad.crear');
+
     Route::delete('documentos/{documentoAdjunto}', [\App\Http\Controllers\DocumentoAdjuntoController::class, 'destroy'])
         ->name('documentos.destroy');
 
