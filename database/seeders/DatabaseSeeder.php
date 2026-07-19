@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PlanDeCuentasSeeder::class);
 
         $demo = [
+            ['email' => 'admin.empresa@inventario.com', 'name' => 'Administrador de Empresa', 'rol' => 'admin'],
             ['email' => 'vendedor@inventario.com',  'name' => 'Carla Vendedora', 'rol' => 'vendedor'],
             ['email' => 'bodeguero@inventario.com',  'name' => 'Luis Bodeguero',  'rol' => 'bodeguero'],
             ['email' => 'contador@inventario.com',   'name' => 'Ana Contadora',   'rol' => 'contador'],
@@ -121,5 +122,11 @@ class DatabaseSeeder extends Seeder
         foreach ($proveedores as $p) {
             Proveedor::create($p);
         }
+
+        // Crea la empresa demo + sucursal principal y les asigna empresa_id a
+        // todo lo sembrado arriba. Sin este paso, todos los usuarios demo
+        // quedan con empresa_id null y el sistema los trata como super-admin
+        // (no pueden crear pedidos/presupuestos/facturas).
+        $this->call(EmpresaSeeder::class);
     }
 }

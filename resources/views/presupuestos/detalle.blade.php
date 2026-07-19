@@ -22,7 +22,7 @@
     </div>
 
     <div class="d-grid gap-2">
-        @can('pedidos.editar')
+        @can('presupuestos.editar')
         @if($presupuesto->estado === 'pendiente')
         <form method="POST" action="{{ route('presupuestos.update',$presupuesto) }}" class="d-grid gap-2">
             @csrf @method('PATCH')
@@ -43,7 +43,7 @@
         @endif
         @endcan
 
-        @can('pedidos.crear')
+        @can('presupuestos.crear')
         @if($presupuesto->estado === 'aprobado')
         <form method="POST" action="{{ route('presupuestos.convertir',$presupuesto) }}">
             @csrf

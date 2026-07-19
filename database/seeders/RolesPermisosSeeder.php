@@ -14,7 +14,7 @@ class RolesPermisosSeeder extends Seeder
 
         $modulos = [
             'productos', 'categorias', 'clientes', 'proveedores',
-            'pedidos', 'compras', 'facturas', 'pagos', 'envios',
+            'presupuestos', 'pedidos', 'compras', 'facturas', 'pagos', 'envios',
             'reportes', 'usuarios', 'configuracion', 'contabilidad',
         ];
         $acciones = ['ver', 'crear', 'editar', 'eliminar'];
@@ -39,6 +39,7 @@ class RolesPermisosSeeder extends Seeder
             'productos.ver',
             'categorias.ver',
             'clientes.ver', 'clientes.crear', 'clientes.editar',
+            'presupuestos.ver', 'presupuestos.crear', 'presupuestos.editar',
             'pedidos.ver', 'pedidos.crear', 'pedidos.editar',
             'facturas.ver', 'facturas.crear',
             'pagos.ver', 'pagos.crear',
@@ -63,7 +64,7 @@ class RolesPermisosSeeder extends Seeder
         $contador->syncPermissions([
             'productos.ver', 'productos.ver_costos',
             'clientes.ver', 'proveedores.ver',
-            'pedidos.ver', 'compras.ver',
+            'presupuestos.ver', 'pedidos.ver', 'compras.ver',
             'facturas.ver', 'facturas.crear',
             'pagos.ver', 'pagos.crear', 'pagos.editar',
             'reportes.ver', 'reportes.compras', 'reportes.exportar',

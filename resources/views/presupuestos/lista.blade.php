@@ -3,7 +3,7 @@
 @section('contenido')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Presupuestos</h5>
-    @can('pedidos.crear')
+    @can('presupuestos.crear')
     @if(!Auth::user()?->esSuperAdmin())
     <a href="{{ route('presupuestos.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Presupuesto</a>
     @endif
@@ -45,7 +45,7 @@
                 <td><div class="d-flex gap-1">
                     <a href="{{ route('presupuestos.show',$p) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
                     <a href="{{ route('presupuestos.pdf',$p) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-pdf"></i></a>
-                    @can('pedidos.editar')
+                    @can('presupuestos.editar')
                     @if($p->estado !== 'convertido')
                     <a href="{{ route('presupuestos.edit',$p) }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
                     @endif

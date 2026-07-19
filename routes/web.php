@@ -63,14 +63,14 @@ Route::middleware(['auth', 'verified', 'licencia'])->group(function () {
         ->name('api.pedidos.buscar-producto')->middleware('permission:pedidos.ver');
 
     Route::resource('presupuestos', \App\Http\Controllers\PresupuestoController::class)
-        ->middlewareFor(['index', 'show'], 'permission:pedidos.ver')
-        ->middlewareFor(['create', 'store'], ['permission:pedidos.crear', 'no-superadmin'])
-        ->middlewareFor(['edit', 'update'], 'permission:pedidos.editar')
-        ->middlewareFor('destroy', 'permission:pedidos.eliminar');
+        ->middlewareFor(['index', 'show'], 'permission:presupuestos.ver')
+        ->middlewareFor(['create', 'store'], ['permission:presupuestos.crear', 'no-superadmin'])
+        ->middlewareFor(['edit', 'update'], 'permission:presupuestos.editar')
+        ->middlewareFor('destroy', 'permission:presupuestos.eliminar');
     Route::post('presupuestos/{presupuesto}/convertir', [\App\Http\Controllers\PresupuestoController::class, 'convertir'])
-        ->name('presupuestos.convertir')->middleware(['permission:pedidos.crear', 'no-superadmin']);
+        ->name('presupuestos.convertir')->middleware(['permission:presupuestos.crear', 'no-superadmin']);
     Route::get('presupuestos/{presupuesto}/pdf', [\App\Http\Controllers\PresupuestoController::class, 'pdf'])
-        ->name('presupuestos.pdf')->middleware('permission:pedidos.ver');
+        ->name('presupuestos.pdf')->middleware('permission:presupuestos.ver');
 
     Route::resource('clientes', ClienteController::class)
         ->middlewareFor(['index', 'show'], 'permission:clientes.ver')
